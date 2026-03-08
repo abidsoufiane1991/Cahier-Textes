@@ -393,30 +393,30 @@ export default function App() {
                 </div>
               </div>
             ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 print:gap-y-2 print:gap-x-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 print:flex print:flex-row print:justify-between print:gap-2">
                 <div className="col-span-2 md:col-span-3 text-center mb-4 no-print">
                   <h3 className="text-xl font-bold text-slate-800">{headerInfo.teacher}</h3>
                 </div>
                 
                 <div className="flex flex-col border-l-4 border-blue-500 pl-3 print:border-l-2 print:pl-2">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[10px]">Niveau scolaire</span>
-                  <span className="text-base font-medium text-slate-900 print:text-sm">{headerInfo.niveauScolaire || '-'}</span>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px]">Niveau scolaire</span>
+                  <span className="text-base font-medium text-slate-900 print:text-xs">{headerInfo.niveauScolaire || '-'}</span>
                 </div>
                 <div className="flex flex-col border-l-4 border-blue-500 pl-3 print:border-l-2 print:pl-2">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[10px]">Module d'enseignement</span>
-                  <span className="text-base font-medium text-slate-900 print:text-sm">{headerInfo.moduleEnseignement || '-'}</span>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px]">Module d'enseignement</span>
+                  <span className="text-base font-medium text-slate-900 print:text-xs">{headerInfo.moduleEnseignement || '-'}</span>
                 </div>
                 <div className="flex flex-col border-l-4 border-blue-500 pl-3 print:border-l-2 print:pl-2">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[10px]">Famille d'APS</span>
-                  <span className="text-base font-medium text-slate-900 print:text-sm">{headerInfo.familleAPS || '-'}</span>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px]">Famille d'APS</span>
+                  <span className="text-base font-medium text-slate-900 print:text-xs">{headerInfo.familleAPS || '-'}</span>
                 </div>
                 <div className="flex flex-col border-l-4 border-blue-500 pl-3 print:border-l-2 print:pl-2">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[10px]">APS support</span>
-                  <span className="text-base font-medium text-slate-900 print:text-sm">{headerInfo.apsSupport || '-'}</span>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px]">APS support</span>
+                  <span className="text-base font-medium text-slate-900 print:text-xs">{headerInfo.apsSupport || '-'}</span>
                 </div>
                 <div className="flex flex-col border-l-4 border-blue-500 pl-3 print:border-l-2 print:pl-2">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[10px]">Classe</span>
-                  <span className="text-base font-medium text-slate-900 print:text-sm">{headerInfo.classe || '-'}</span>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px]">Classe</span>
+                  <span className="text-base font-medium text-slate-900 print:text-xs">{headerInfo.classe || '-'}</span>
                 </div>
               </div>
             )}
@@ -485,19 +485,19 @@ export default function App() {
                           onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
                           className="w-full bg-transparent border border-slate-200 print:border-none rounded p-1 text-[10px] print:text-[8px] focus:outline-none focus:border-blue-500"
                         />
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col print:flex-row gap-1">
                           <input 
                             type="time" 
                             value={session.heure}
                             onChange={(e) => handleSessionChange(session.id, 'heure', e.target.value)}
-                            className="w-full bg-transparent border border-slate-200 print:border-none rounded p-1 text-[10px] print:text-[8px] focus:outline-none focus:border-blue-500"
+                            className="w-full print:w-1/2 bg-transparent border border-slate-200 print:border-none rounded p-1 text-[10px] print:text-[8px] focus:outline-none focus:border-blue-500"
                           />
                           <input 
                             type="text" 
                             placeholder="Durée"
                             value={session.duree}
                             onChange={(e) => handleSessionChange(session.id, 'duree', e.target.value)}
-                            className="w-full bg-transparent border border-slate-200 print:border-none rounded p-1 text-[10px] print:text-[8px] focus:outline-none focus:border-blue-500"
+                            className="w-full print:w-1/2 bg-transparent border border-slate-200 print:border-none rounded p-1 text-[10px] print:text-[8px] focus:outline-none focus:border-blue-500"
                           />
                         </div>
                       </td>
