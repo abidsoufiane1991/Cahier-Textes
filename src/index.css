@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@media print {
+  body {
+    background-color: white;
+    font-size: 10px;
+    margin: 0;
+    padding: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    size: landscape;
+    margin: 5mm;
+  }
+
+  /* Compact table for print */
+  table {
+    width: 100% !important;
+    table-layout: fixed;
+  }
+  th, td {
+    padding: 4px !important;
+    line-height: 1.1 !important;
+  }
+  textarea, input {
+    font-size: 10px !important;
+    padding: 2px !important;
+  }
+  
+  /* Reduce spacing between sections */
+  main {
+    padding: 0 !important;
+    gap: 10px !important;
+  }
+  section {
+    margin-bottom: 10px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .p-6 {
+    padding: 8px !important;
+  }
+  .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 8px !important;
+  }
+  
+  /* Signatures section compact */
+  .mt-12 {
+    margin-top: 15px !important;
+  }
+  .space-y-12 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 15px !important;
+  }
+}
+
