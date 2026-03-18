@@ -468,12 +468,12 @@ export default function App() {
               </div>
             ) : (
               <div className="flex flex-col gap-6 print:gap-4">
-                <div className="w-full text-center mb-4 pb-6 border-b border-slate-100 print:mb-2 print:pb-2">
-                  <h3 className="text-2xl font-serif text-slate-900 print:text-xl font-bold">Cahier de Textes - {headerInfo.teacher}</h3>
-                </div>
-
                 <div className="flex justify-between items-start w-full px-2">
                   <div className="flex flex-col items-center flex-1 px-2 text-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Professeur</span>
+                    <span className="text-sm font-semibold text-slate-800">{headerInfo.teacher || '-'}</span>
+                  </div>
+                  <div className="flex flex-col items-center flex-1 px-2 text-center border-l border-slate-200">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Niveau scolaire</span>
                     <span className="text-sm font-semibold text-slate-800">{headerInfo.niveauScolaire || '-'}</span>
                   </div>
@@ -515,13 +515,13 @@ export default function App() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse table-fixed">
               <thead>
-                <tr className="bg-slate-800 text-white text-[11px] font-semibold uppercase tracking-wider print:bg-slate-200 print:text-slate-900">
-                  <th className="py-3 px-4 w-[15%] text-center border-r border-slate-700 print:border-slate-400">Séquences</th>
-                  <th className="py-3 px-2 w-16 text-center border-r border-slate-700 print:border-slate-400">Séances</th>
-                  <th className="py-3 px-4 w-[35%] text-center border-r border-slate-700 print:border-slate-400">Objectifs</th>
-                  <th className="py-3 px-2 w-24 text-center border-r border-slate-700 print:border-slate-400">Date</th>
-                  <th className="py-3 px-2 w-20 text-center border-r border-slate-700 print:border-slate-400">Heure</th>
-                  <th className="py-3 px-4 w-[15%] text-center">Bilan / Observations</th>
+                <tr className="bg-indigo-50/60 text-indigo-900 text-[10px] font-bold uppercase tracking-widest border-b-2 border-indigo-200 print:bg-indigo-50 print:text-indigo-950 print:border-indigo-300">
+                  <th className="py-4 px-4 w-[15%] text-left border-r border-indigo-100/50 print:border-indigo-200">Séquences</th>
+                  <th className="py-4 px-2 w-16 text-center border-r border-indigo-100/50 print:border-indigo-200">Séances</th>
+                  <th className="py-4 px-4 w-[35%] text-left border-r border-indigo-100/50 print:border-indigo-200">Objectifs</th>
+                  <th className="py-4 px-2 w-24 text-left border-r border-indigo-100/50 print:border-indigo-200">Date</th>
+                  <th className="py-4 px-2 w-20 text-left border-r border-indigo-100/50 print:border-indigo-200">Heure</th>
+                  <th className="py-4 px-4 w-[15%] text-left">Bilan / Observations</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
@@ -529,9 +529,9 @@ export default function App() {
                   const span = sequenceSpans[index];
                   
                   return (
-                    <tr key={session.id} className={`group border-b border-slate-200 last:border-0 transition-all duration-200 hover:bg-slate-50/50 ${session.completed ? 'bg-emerald-50/10' : ''}`}>
+                    <tr key={session.id} className={`group border-b border-slate-200 print:border-indigo-100 last:border-0 transition-all duration-200 hover:bg-slate-50/50 ${session.completed ? 'bg-emerald-50/10' : ''}`}>
                       {span > 0 && (
-                        <td rowSpan={span} className="py-3 px-4 align-top border-r border-slate-200/50 bg-slate-50/30">
+                        <td rowSpan={span} className="py-3 px-4 align-top border-r border-slate-200/50 print:border-indigo-100 bg-slate-50/30 print:bg-transparent">
                           <textarea 
                             dir="auto"
                             value={session.sequence}
@@ -548,12 +548,12 @@ export default function App() {
                           />
                         </td>
                       )}
-                      <td className="py-3 px-2 text-center align-top pt-5">
+                      <td className="py-3 px-2 text-center align-top pt-5 border-r border-slate-200/50 print:border-indigo-100">
                         <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold transition-colors print:bg-transparent print:w-auto print:h-auto ${session.completed ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:shadow-sm group-hover:text-indigo-600'}`}>
                           {session.seanceNumber}
                         </span>
                       </td>
-                      <td className="py-3 px-4 align-top">
+                      <td className="py-3 px-4 align-top border-r border-slate-200/50 print:border-indigo-100">
                         <textarea 
                           dir="auto"
                           value={session.objectif}
@@ -562,7 +562,7 @@ export default function App() {
                           placeholder="Objectifs de la séance..."
                         />
                       </td>
-                      <td className="py-3 px-2 align-top pt-4">
+                      <td className="py-3 px-2 align-top pt-4 border-r border-slate-200/50 print:border-indigo-100">
                         <input 
                           type="date" 
                           value={session.date}
@@ -570,7 +570,7 @@ export default function App() {
                           className="w-full bg-transparent border border-transparent hover:border-slate-200 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-500/20 rounded-md px-2 py-1.5 text-[12px] print:text-[10px] text-slate-600 cursor-pointer transition-all hover:bg-white/60 focus:bg-white"
                         />
                       </td>
-                      <td className="py-3 px-2 align-top pt-4">
+                      <td className="py-3 px-2 align-top pt-4 border-r border-slate-200/50 print:border-indigo-100">
                         <input 
                           type="time" 
                           value={session.heure}
@@ -610,21 +610,21 @@ export default function App() {
         </section>
 
         {/* Signatures Section */}
-        <section className="mt-12 hidden print:grid grid-cols-3 gap-8 text-center text-sm font-medium text-slate-600">
-          <div className="space-y-12">
-            <p>Signature et observations de l'Inspecteur :</p>
-            <div className="border-b border-dotted border-slate-400"></div>
-            <div className="border-b border-dotted border-slate-400"></div>
+        <section className="mt-16 grid grid-cols-3 gap-8 text-center print:mt-12 bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100/80 p-8 print:shadow-none print:border-none print:rounded-none print:p-0">
+          <div className="flex flex-col items-center w-full">
+            <span className="font-bold uppercase tracking-widest text-[11px] text-slate-800 mb-12 print:text-indigo-950">L'Inspecteur</span>
+            <div className="w-full max-w-[12rem] h-px bg-slate-300 mb-2 print:bg-indigo-200"></div>
+            <span className="text-[10px] text-slate-500 italic print:text-indigo-400">Signature & Cachet</span>
           </div>
-          <div className="space-y-12">
-            <p>Signature et observations du Directeur :</p>
-            <div className="border-b border-dotted border-slate-400"></div>
-            <div className="border-b border-dotted border-slate-400"></div>
+          <div className="flex flex-col items-center w-full">
+            <span className="font-bold uppercase tracking-widest text-[11px] text-slate-800 mb-12 print:text-indigo-950">Le Directeur</span>
+            <div className="w-full max-w-[12rem] h-px bg-slate-300 mb-2 print:bg-indigo-200"></div>
+            <span className="text-[10px] text-slate-500 italic print:text-indigo-400">Signature & Cachet</span>
           </div>
-          <div className="space-y-12">
-            <p>Signature et observations du Professeur :</p>
-            <div className="border-b border-dotted border-slate-400"></div>
-            <div className="border-b border-dotted border-slate-400"></div>
+          <div className="flex flex-col items-center w-full">
+            <span className="font-bold uppercase tracking-widest text-[11px] text-slate-800 mb-12 print:text-indigo-950">Le Professeur</span>
+            <div className="w-full max-w-[12rem] h-px bg-slate-300 mb-2 print:bg-indigo-200"></div>
+            <span className="text-[10px] text-slate-500 italic print:text-indigo-400">Signature</span>
           </div>
         </section>
 

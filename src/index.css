@@ -12,9 +12,10 @@ body {
 @media print {
   body {
     background-color: white;
-    font-size: 9px !important;
+    font-size: 11px !important;
     margin: 0;
     padding: 0;
+    color: #1e1b4b !important; /* indigo-950 */
   }
   .no-print {
     display: none !important;
@@ -27,8 +28,8 @@ body {
   }
 
   @page {
-    size: landscape;
-    margin: 5mm;
+    size: portrait;
+    margin: 10mm;
   }
 
   /* Compact table for print */
@@ -37,54 +38,52 @@ body {
     table-layout: fixed;
   }
   th, td {
-    padding: 2px 4px !important;
-    line-height: 1.1 !important;
+    padding: 6px !important;
+    line-height: 1.2 !important;
   }
   textarea, input {
-    font-size: 9px !important;
-    padding: 0 !important;
+    font-size: 11px !important;
+    padding: 2px !important;
     min-height: 0 !important;
     margin: 0 !important;
-    line-height: 1.1 !important;
+    line-height: 1.2 !important;
     overflow: hidden !important;
     height: auto !important;
     background: transparent !important;
     border: none !important;
+    color: #1e1b4b !important;
   }
   
   /* Reduce spacing between sections */
   main {
     padding: 0 !important;
-    gap: 0 !important;
+    gap: 8px !important;
   }
   section {
-    margin-bottom: 0 !important;
+    margin-bottom: 8px !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     border: none !important;
   }
   .p-6, .px-8, .py-6, .py-5, .p-8 {
-    padding: 2px !important;
+    padding: 4px !important;
   }
   .space-y-8 > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 2px !important;
+    margin-top: 4px !important;
   }
   
   /* Signatures section compact */
   .mt-12 {
-    margin-top: 8px !important;
-  }
-  .space-y-12 > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 8px !important;
+    margin-top: 16px !important;
   }
   
   /* Header compact */
-  .mb-4 { margin-bottom: 2px !important; }
-  .pb-6 { padding-bottom: 2px !important; }
-  .text-2xl { font-size: 14px !important; }
-  .text-sm { font-size: 9px !important; }
-  .text-\[10px\] { font-size: 8px !important; }
-  .gap-y-8 { gap: 2px !important; }
+  .mb-4 { margin-bottom: 4px !important; }
+  .pb-6 { padding-bottom: 4px !important; }
+  .text-2xl { font-size: 16px !important; }
+  .text-sm { font-size: 11px !important; }
+  .text-\[10px\] { font-size: 9px !important; }
+  .gap-y-8 { gap: 4px !important; }
   .pt-5, .pt-4 { padding-top: 0 !important; }
   
   tr {
