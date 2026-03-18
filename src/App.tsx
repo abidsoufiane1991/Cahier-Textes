@@ -17,9 +17,7 @@ import {
   COMMON_OBSERVATIONS
 } from './constants';
 import { HeaderInfo, Session } from './types';
-import { Printer, Save, Plus, Trash2, Edit2, FileDown, FileUp, CheckCircle, XCircle, Download, ChevronDown, FileText, User, BookOpen, Layers, Activity, Target, Users, Hash, CalendarClock, MessageSquare, Settings2, ListOrdered } from 'lucide-react';
-import { saveAs } from 'file-saver';
-import { asBlob } from 'html-docx-js-typescript';
+import { Printer, Save, Plus, Trash2, Edit2, FileDown, FileUp, CheckCircle, Download, User, GraduationCap, Calendar } from 'lucide-react';
 
 const BilanInput = ({ 
   value, 
@@ -43,12 +41,13 @@ const BilanInput = ({
     <div className="flex flex-col w-full relative">
       <textarea 
         dir="auto"
-        placeholder="Observations..."
+        placeholder="Observations et bilan de la séance..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setTimeout(() => setFocused(false), 200)}
-        className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 rounded-md p-2 -ml-2 min-h-[40px] text-[13px] leading-relaxed text-slate-600 placeholder-slate-300 hover:bg-white/60 focus:bg-white transition-all"
+        className="w-full bg-transparent resize-none focus:outline-none text-sm text-slate-700 placeholder-slate-400 min-h-[24px] h-[24px] bilan-textarea"
+        rows={1}
       />
       {focused && filtered.length > 0 && (
         <div className="absolute top-full left-0 z-20 mt-1 w-64 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden no-print flex flex-col py-1">
@@ -239,83 +238,6 @@ export default function App() {
     reader.readAsText(file);
   };
 
-  const downloadPDF = () => {
-    // Tailwind v4 uses modern CSS functions (oklch, color-mix) that html2canvas cannot parse.
-    // The native browser print dialog is the most reliable way to generate a perfect PDF.
-    // On Android/iOS and Desktop, this allows "Save as PDF".
-    window.print();
-  };
-
-  const downloadDOCX = () => {
-    const element = document.getElementById('document-content');
-    if (!element) return;
-
-    // Clone the element to modify it for DOCX export
-    const clone = element.cloneNode(true) as HTMLElement;
-    
-    // Remove elements that shouldn't be in the DOCX (like buttons)
-    const noPrintElements = clone.querySelectorAll('.no-print');
-    noPrintElements.forEach(el => el.remove());
-
-    // Convert inputs and textareas to text nodes for DOCX
-    const inputs = clone.querySelectorAll('input, textarea, select');
-    inputs.forEach(input => {
-      const value = (input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
-      const textNode = document.createTextNode(value || ' ');
-      input.parentNode?.replaceChild(textNode, input);
-    });
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Cahier de Textes</title>
-          <style>
-            body { font-family: Arial, sans-serif; font-size: 12px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-            th, td { border: 1px solid #000; padding: 5px; text-align: left; }
-            th { background-color: #f0f0f0; }
-            h2, h3 { color: #333; }
-            .grid { display: block; }
-            .flex { display: block; }
-            .text-center { text-align: center; }
-          </style>
-        </head>
-        <body>
-          ${clone.innerHTML}
-        </body>
-      </html>
-    `;
-
-    asBlob(html, { orientation: 'landscape', margins: { top: 720, right: 720, bottom: 720, left: 720 } }).then(converted => {
-      saveAs(converted as Blob, 'Cahier_de_Textes_EPS.docx');
-    }).catch(err => {
-      console.error('DOCX generation error', err);
-      alert('Erreur lors de la génération du fichier Word.');
-    });
-  };
-
-  const getSequenceSpans = () => {
-    const spans = new Array(sessions.length).fill(1);
-    for (let i = 0; i < sessions.length; i++) {
-      if (spans[i] === 0) continue;
-      let span = 1;
-      for (let j = i + 1; j < sessions.length; j++) {
-        if (sessions[i].sequence === sessions[j].sequence) {
-          span++;
-          spans[j] = 0;
-        } else {
-          break;
-        }
-      }
-      spans[i] = span;
-    }
-    return spans;
-  };
-
-  const sequenceSpans = getSequenceSpans();
-
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       {/* Top Navigation - No Print */}
@@ -346,46 +268,30 @@ export default function App() {
             <Save size={16} />
             <span className="hidden sm:inline">Sauvegarder</span>
           </button>
-          <div className="relative group">
-            <button className="flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium shadow-sm shadow-red-200">
-              <Download size={16} />
-              <span className="hidden sm:inline">Télécharger</span>
-              <ChevronDown size={14} />
-            </button>
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              <button onClick={downloadPDF} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center gap-2">
-                <FileText size={16} /> Format PDF
-              </button>
-              <button onClick={downloadDOCX} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center gap-2">
-                <FileText size={16} /> Format Word (DOCX)
-              </button>
-            </div>
-          </div>
-          <button onClick={() => window.print()} className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium shadow-sm shadow-blue-200">
+          <button onClick={() => window.print()} className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors text-sm font-medium shadow-sm">
             <Printer size={16} />
             <span className="hidden sm:inline">Imprimer</span>
           </button>
         </div>
       </nav>
 
-      <main id="document-content" className="max-w-7xl mx-auto p-6 space-y-8">
+      <main id="document-content" className="max-w-4xl mx-auto p-6 space-y-12 bg-white min-h-screen shadow-sm print:shadow-none">
         
         {/* Header Information Section */}
-        <section className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100/80 overflow-hidden print:shadow-none print:border-none print:rounded-none">
-          <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center no-print">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-800">Informations Générales</h2>
-            <button 
-              onClick={() => setIsEditingHeader(!isEditingHeader)}
-              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm hover:shadow"
-            >
-              <Edit2 size={14} />
-              {isEditingHeader ? 'Terminer l\'édition' : 'Modifier'}
-            </button>
-          </div>
-
-          <div className="p-8 print:p-2">
-            {isEditingHeader ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 no-print">
+        <section className="relative">
+          {isEditingHeader ? (
+            <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100/80 overflow-hidden no-print mb-8">
+              <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-800">Informations Générales</h2>
+                <button 
+                  onClick={() => setIsEditingHeader(false)}
+                  className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-medium transition-colors bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm hover:shadow"
+                >
+                  <Edit2 size={14} />
+                  Terminer l'édition
+                </button>
+              </div>
+              <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Nom du Professeur</label>
                   <input
@@ -466,165 +372,165 @@ export default function App() {
                   />
                 </div>
               </div>
-            ) : (
-              <div className="flex flex-col gap-6 print:gap-4">
-                <div className="flex justify-between items-start w-full px-2">
-                  <div className="flex flex-col items-center flex-1 px-2 text-center">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Professeur</span>
-                    <span className="text-sm font-semibold text-slate-800">{headerInfo.teacher || '-'}</span>
-                  </div>
-                  <div className="flex flex-col items-center flex-1 px-2 text-center border-l border-slate-200">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Niveau scolaire</span>
-                    <span className="text-sm font-semibold text-slate-800">{headerInfo.niveauScolaire || '-'}</span>
-                  </div>
-                  <div className="flex flex-col items-center flex-1 px-2 text-center border-l border-slate-200">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Module d'enseignement</span>
-                    <span className="text-sm font-semibold text-slate-800">{headerInfo.moduleEnseignement || '-'}</span>
-                  </div>
-                  <div className="flex flex-col items-center flex-1 px-2 text-center border-l border-slate-200">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Famille d'APS</span>
-                    <span className="text-sm font-semibold text-slate-800">{headerInfo.familleAPS || '-'}</span>
-                  </div>
-                  <div className="flex flex-col items-center flex-1 px-2 text-center border-l border-slate-200">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">APS support</span>
-                    <span className="text-sm font-semibold text-slate-800">{headerInfo.apsSupport || '-'}</span>
-                  </div>
-                  <div className="flex flex-col items-center flex-1 px-2 text-center border-l border-slate-200">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Classe</span>
-                    <span className="text-sm font-semibold text-slate-800">{headerInfo.classe || '-'}</span>
-                  </div>
+            </div>
+          ) : (
+            <div className="flex justify-between items-start mb-12 border-b border-slate-200 pb-6 print:mb-8 print:pb-4 group">
+              <button 
+                onClick={() => setIsEditingHeader(true)}
+                className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 font-medium bg-white border border-slate-200 px-2 py-1 rounded-md shadow-sm no-print"
+              >
+                <Edit2 size={12} />
+                Modifier
+              </button>
+              
+              <div className="flex items-baseline gap-4">
+                <h2 className="text-4xl font-display font-bold text-[#0B1021] tracking-tight">Cahier de textes</h2>
+                <span className="text-sm font-medium text-slate-500 flex items-center gap-1.5">
+                  <Calendar size={14} />
+                  {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1.5 text-xs text-slate-500">
+                <div className="flex items-center gap-2">
+                  <User size={14} className="text-slate-400" />
+                  <span><strong className="text-slate-700 font-semibold">Enseignant(e)</strong> {headerInfo.teacher || '-'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <GraduationCap size={14} className="text-slate-400" />
+                  <span><strong className="text-slate-700 font-semibold">Classe</strong> {headerInfo.classe || '-'}</span>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </section>
 
-        {/* Sessions Table Section */}
-        <section className="bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100/80 overflow-hidden print:shadow-none print:border-none print:rounded-none">
-          <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center no-print">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-800">Planification des Séances</h2>
+        {/* Sessions List Section */}
+        <section className="space-y-12">
+          {sessions.map((session, index) => {
+            const showSequence = index === 0 || session.sequence !== sessions[index - 1].sequence;
+            
+            return (
+            <div key={session.id} className="group relative flex gap-6">
+              {/* Timeline Column */}
+              <div className="flex flex-col items-end w-16 shrink-0 text-[11px] font-semibold text-slate-600 relative pt-1">
+                <input 
+                  type="time" 
+                  lang="fr-FR"
+                  value={session.heure}
+                  onChange={(e) => handleSessionChange(session.id, 'heure', e.target.value)}
+                  className="w-full text-right bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+                />
+                <div className="absolute top-7 bottom-6 right-2 w-px bg-slate-200"></div>
+                <span className="mt-auto text-slate-400">
+                  {session.heure ? `${String(parseInt(session.heure.split(':')[0]) + parseInt(session.duree || '1')).padStart(2, '0')}h${session.heure.split(':')[1] || '00'}` : '--h--'}
+                </span>
+              </div>
+
+              {/* Content Column */}
+              <div className="flex-1 pb-4">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    {showSequence && (
+                      <h3 className="text-lg font-display font-bold text-[#0B1021] underline decoration-2 underline-offset-4 decoration-indigo-200">
+                        <input 
+                          type="text" 
+                          value={session.sequence}
+                          onChange={(e) => {
+                            const oldSeq = session.sequence;
+                            const newSessions = sessions.map(s => s.sequence === oldSeq ? { ...s, sequence: e.target.value } : s);
+                            setSessions(newSessions);
+                          }}
+                          className="bg-transparent border-none p-0 focus:ring-0 w-auto min-w-[200px]"
+                          placeholder="Nom de la séquence"
+                        />
+                      </h3>
+                    )}
+                    <input 
+                      type="date" 
+                      lang="fr-FR"
+                      value={session.date}
+                      onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
+                      className="text-xs font-medium text-slate-500 bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <h4 className="text-[11px] font-bold text-[#0B1021] uppercase tracking-wider">Objectifs :</h4>
+                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md">
+                      Séance {session.seanceNumber}
+                    </span>
+                  </div>
+                  <textarea 
+                    dir="auto"
+                    value={session.objectif}
+                    onChange={(e) => handleSessionChange(session.id, 'objectif', e.target.value)}
+                    className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700"
+                    placeholder="Objectifs de la séance..."
+                    rows={2}
+                  />
+                </div>
+
+                <div className="border border-slate-200 rounded-xl p-5 relative mt-8">
+                  <div className="absolute -top-3 left-5 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C]">
+                    <Edit2 size={12} />
+                    Bilan
+                  </div>
+                  
+                  <BilanInput 
+                    value={session.bilan}
+                    onChange={(val) => handleSessionChange(session.id, 'bilan', val)}
+                    allSessions={sessions}
+                  />
+                </div>
+              </div>
+              
+              {/* Actions */}
+              <div className="absolute right-0 top-10 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity no-print bg-white/90 p-1 rounded-md shadow-sm border border-slate-100">
+                <button 
+                  onClick={() => handleSessionChange(session.id, 'completed', !session.completed)}
+                  className={`p-1.5 rounded-md transition-colors ${session.completed ? 'text-emerald-500 hover:bg-emerald-50' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
+                  title={session.completed ? "Marquer comme non terminée" : "Marquer comme terminée"}
+                >
+                  <CheckCircle size={14} />
+                </button>
+                <button 
+                  onClick={() => deleteSession(session.id)}
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                  title="Supprimer la séance"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+            );
+          })}
+
+          <div className="pt-4 no-print flex justify-center">
             <button 
               onClick={addSession}
-              className="flex items-center gap-2 text-sm bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md active:scale-95"
+              className="flex items-center gap-2 text-sm bg-slate-900 text-white hover:bg-slate-800 px-6 py-2.5 rounded-full font-medium transition-all shadow-sm hover:shadow-md active:scale-95"
             >
               <Plus size={16} />
               Ajouter une séance
             </button>
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-fixed">
-              <thead>
-                <tr className="bg-indigo-50/60 text-indigo-900 text-[10px] font-bold uppercase tracking-widest border-b-2 border-indigo-200 print:bg-indigo-50 print:text-indigo-950 print:border-indigo-300">
-                  <th className="py-4 px-4 w-[15%] text-left border-r border-indigo-100/50 print:border-indigo-200">Séquences</th>
-                  <th className="py-4 px-2 w-16 text-center border-r border-indigo-100/50 print:border-indigo-200">Séances</th>
-                  <th className="py-4 px-4 w-[35%] text-left border-r border-indigo-100/50 print:border-indigo-200">Objectifs</th>
-                  <th className="py-4 px-2 w-24 text-left border-r border-indigo-100/50 print:border-indigo-200">Date</th>
-                  <th className="py-4 px-2 w-20 text-left border-r border-indigo-100/50 print:border-indigo-200">Heure</th>
-                  <th className="py-4 px-4 w-[15%] text-left">Bilan / Observations</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {sessions.map((session, index) => {
-                  const span = sequenceSpans[index];
-                  
-                  return (
-                    <tr key={session.id} className={`group border-b border-slate-200 print:border-indigo-100 last:border-0 transition-all duration-200 hover:bg-slate-50/50 ${session.completed ? 'bg-emerald-50/10' : ''}`}>
-                      {span > 0 && (
-                        <td rowSpan={span} className="py-3 px-4 align-top border-r border-slate-200/50 print:border-indigo-100 bg-slate-50/30 print:bg-transparent">
-                          <textarea 
-                            dir="auto"
-                            value={session.sequence}
-                            onChange={(e) => {
-                              const newSessions = [...sessions];
-                              for(let i = index; i < index + span; i++) {
-                                newSessions[i].sequence = e.target.value;
-                              }
-                              setSessions(newSessions);
-                            }}
-                            className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 rounded-md p-2 -ml-2 text-[13px] leading-relaxed font-medium text-slate-800 hover:bg-white/60 focus:bg-white transition-all"
-                            rows={span > 1 ? span * 3 : 2}
-                            placeholder="Nom de la séquence..."
-                          />
-                        </td>
-                      )}
-                      <td className="py-3 px-2 text-center align-top pt-5 border-r border-slate-200/50 print:border-indigo-100">
-                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold transition-colors print:bg-transparent print:w-auto print:h-auto ${session.completed ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:shadow-sm group-hover:text-indigo-600'}`}>
-                          {session.seanceNumber}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 align-top border-r border-slate-200/50 print:border-indigo-100">
-                        <textarea 
-                          dir="auto"
-                          value={session.objectif}
-                          onChange={(e) => handleSessionChange(session.id, 'objectif', e.target.value)}
-                          className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 rounded-md p-2 -ml-2 min-h-[60px] text-[13px] leading-relaxed text-slate-700 hover:bg-white/60 focus:bg-white transition-all"
-                          placeholder="Objectifs de la séance..."
-                        />
-                      </td>
-                      <td className="py-3 px-2 align-top pt-4 border-r border-slate-200/50 print:border-indigo-100">
-                        <input 
-                          type="date" 
-                          value={session.date}
-                          onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
-                          className="w-full bg-transparent border border-transparent hover:border-slate-200 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-500/20 rounded-md px-2 py-1.5 text-[12px] print:text-[10px] text-slate-600 cursor-pointer transition-all hover:bg-white/60 focus:bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-2 align-top pt-4 border-r border-slate-200/50 print:border-indigo-100">
-                        <input 
-                          type="time" 
-                          value={session.heure}
-                          onChange={(e) => handleSessionChange(session.id, 'heure', e.target.value)}
-                          className="w-full bg-transparent border border-transparent hover:border-slate-200 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-500/20 rounded-md px-2 py-1.5 text-[12px] print:text-[10px] text-slate-600 cursor-pointer transition-all hover:bg-white/60 focus:bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-4 align-top relative">
-                        <BilanInput 
-                          value={session.bilan}
-                          onChange={(val) => handleSessionChange(session.id, 'bilan', val)}
-                          allSessions={sessions}
-                        />
-                        <div className="absolute right-2 top-3 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity no-print bg-white/90 p-1 rounded-md shadow-sm border border-slate-100">
-                          <button 
-                            onClick={() => handleSessionChange(session.id, 'completed', !session.completed)}
-                            className={`p-1.5 rounded-md transition-colors ${session.completed ? 'text-emerald-500 hover:bg-emerald-50' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
-                            title={session.completed ? "Marquer comme non terminée" : "Marquer comme terminée"}
-                          >
-                            <CheckCircle size={14} />
-                          </button>
-                          <button 
-                            onClick={() => deleteSession(session.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                            title="Supprimer la séance"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
         </section>
 
         {/* Signatures Section */}
-        <section className="mt-16 grid grid-cols-3 gap-8 text-center print:mt-12 bg-white rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100/80 p-8 print:shadow-none print:border-none print:rounded-none print:p-0">
+        <section className="mt-16 grid grid-cols-3 gap-4 text-center print:mt-12 bg-transparent p-0">
           <div className="flex flex-col items-center w-full">
-            <span className="font-bold uppercase tracking-widest text-[11px] text-slate-800 mb-12 print:text-indigo-950">L'Inspecteur</span>
-            <div className="w-full max-w-[12rem] h-px bg-slate-300 mb-2 print:bg-indigo-200"></div>
-            <span className="text-[10px] text-slate-500 italic print:text-indigo-400">Signature & Cachet</span>
+            <span className="font-bold uppercase tracking-widest text-[9px] text-slate-500 mb-6 print:text-slate-800">L'Inspecteur</span>
+            <div className="w-full max-w-[10rem] h-px bg-slate-300 print:bg-slate-400"></div>
           </div>
           <div className="flex flex-col items-center w-full">
-            <span className="font-bold uppercase tracking-widest text-[11px] text-slate-800 mb-12 print:text-indigo-950">Le Directeur</span>
-            <div className="w-full max-w-[12rem] h-px bg-slate-300 mb-2 print:bg-indigo-200"></div>
-            <span className="text-[10px] text-slate-500 italic print:text-indigo-400">Signature & Cachet</span>
+            <span className="font-bold uppercase tracking-widest text-[9px] text-slate-500 mb-6 print:text-slate-800">Le Directeur</span>
+            <div className="w-full max-w-[10rem] h-px bg-slate-300 print:bg-slate-400"></div>
           </div>
           <div className="flex flex-col items-center w-full">
-            <span className="font-bold uppercase tracking-widest text-[11px] text-slate-800 mb-12 print:text-indigo-950">Le Professeur</span>
-            <div className="w-full max-w-[12rem] h-px bg-slate-300 mb-2 print:bg-indigo-200"></div>
-            <span className="text-[10px] text-slate-500 italic print:text-indigo-400">Signature</span>
+            <span className="font-bold uppercase tracking-widest text-[9px] text-slate-500 mb-6 print:text-slate-800">Le Professeur</span>
+            <div className="w-full max-w-[10rem] h-px bg-slate-300 print:bg-slate-400"></div>
           </div>
         </section>
 
