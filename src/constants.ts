@@ -1,5 +1,18 @@
 import { HeaderInfo, Session } from './types';
 
+export const COMMON_OBSERVATIONS = [
+  "Objectif atteint",
+  "Objectif partiellement atteint",
+  "Non atteint, à revoir",
+  "Bonne participation",
+  "Manque d'implication",
+  "Difficultés techniques observées",
+  "Excellente dynamique de groupe",
+  "Séance perturbée (météo/autre)",
+  "Évaluation reportée",
+  "Nécessite plus de temps"
+];
+
 export const INITIAL_HEADER: HeaderInfo = {
   teacher: "Pr. Soufiane ABID | ذ. سفيان عابيد",
   niveauScolaire: "Tronc Commun",
