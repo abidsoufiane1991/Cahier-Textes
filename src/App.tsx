@@ -383,10 +383,6 @@ export default function App() {
             </button>
           </div>
 
-          <div className="hidden print:block text-center py-2 text-lg font-bold border-b border-slate-200 mb-2">
-            Cahier de Textes - {headerInfo.teacher}
-          </div>
-
           <div className="p-8 print:p-2">
             {isEditingHeader ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 no-print">
@@ -472,8 +468,8 @@ export default function App() {
               </div>
             ) : (
               <div className="flex flex-col gap-6 print:gap-4">
-                <div className="w-full text-center mb-4 pb-6 border-b border-slate-100">
-                  <h3 className="text-2xl font-serif text-slate-900">{headerInfo.teacher}</h3>
+                <div className="w-full text-center mb-4 pb-6 border-b border-slate-100 print:mb-2 print:pb-2">
+                  <h3 className="text-2xl font-serif text-slate-900 print:text-xl font-bold">Cahier de Textes - {headerInfo.teacher}</h3>
                 </div>
 
                 <div className="flex justify-between items-start w-full px-2">

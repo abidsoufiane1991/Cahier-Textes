@@ -12,7 +12,7 @@ body {
 @media print {
   body {
     background-color: white;
-    font-size: 10px;
+    font-size: 9px !important;
     margin: 0;
     padding: 0;
   }
@@ -37,29 +37,37 @@ body {
     table-layout: fixed;
   }
   th, td {
-    padding: 4px !important;
+    padding: 2px 4px !important;
     line-height: 1.1 !important;
   }
   textarea, input {
-    font-size: 10px !important;
-    padding: 2px !important;
+    font-size: 9px !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
+    overflow: hidden !important;
+    height: auto !important;
+    background: transparent !important;
+    border: none !important;
   }
   
   /* Reduce spacing between sections */
   main {
     padding: 0 !important;
-    gap: 4px !important;
+    gap: 0 !important;
   }
   section {
-    margin-bottom: 4px !important;
+    margin-bottom: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+    border: none !important;
   }
-  .p-6 {
-    padding: 4px !important;
+  .p-6, .px-8, .py-6, .py-5, .p-8 {
+    padding: 2px !important;
   }
   .space-y-8 > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 4px !important;
+    margin-top: 2px !important;
   }
   
   /* Signatures section compact */
@@ -68,6 +76,19 @@ body {
   }
   .space-y-12 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 8px !important;
+  }
+  
+  /* Header compact */
+  .mb-4 { margin-bottom: 2px !important; }
+  .pb-6 { padding-bottom: 2px !important; }
+  .text-2xl { font-size: 14px !important; }
+  .text-sm { font-size: 9px !important; }
+  .text-\[10px\] { font-size: 8px !important; }
+  .gap-y-8 { gap: 2px !important; }
+  .pt-5, .pt-4 { padding-top: 0 !important; }
+  
+  tr {
+    page-break-inside: avoid;
   }
 }
 
