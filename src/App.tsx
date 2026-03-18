@@ -17,7 +17,8 @@ import {
   COMMON_OBSERVATIONS
 } from './constants';
 import { HeaderInfo, Session } from './types';
-import { Printer, Save, Plus, Trash2, Edit2, FileDown, FileUp, CheckCircle, Download, User, GraduationCap, Calendar } from 'lucide-react';
+import { Printer, Save, Plus, Trash2, Edit2, FileDown, FileUp, CheckCircle, Download, User, GraduationCap, Calendar, Cloud, RefreshCw } from 'lucide-react';
+import { supabase } from './lib/supabase';
 
 const BilanInput = ({ 
   value, 
@@ -33,24 +34,24 @@ const BilanInput = ({
   const uniquePrevious = Array.from(new Set(allSessions.map(s => s.bilan).filter(b => b && b.trim() !== '')));
   const allSuggestions = Array.from(new Set([...COMMON_OBSERVATIONS, ...uniquePrevious]));
   
-  const filtered = allSuggestions.filter(s => 
-    s.toLowerCase().includes((value || '').toLowerCase()) && s !== value
-  ).slice(0, 4);
+  const filtered = value.trim() === '' 
+    ? allSuggestions.slice(0, 6)
+    : allSuggestions.filter(s => s.toLowerCase().includes((value || '').toLowerCase()) && s !== value).slice(0, 6);
 
   return (
     <div className="flex flex-col w-full relative">
       <textarea 
         dir="auto"
-        placeholder="Observations et bilan de la séance..."
+        placeholder=""
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setTimeout(() => setFocused(false), 200)}
-        className="w-full bg-transparent resize-none focus:outline-none text-sm text-slate-700 placeholder-slate-400 min-h-[24px] h-[24px] bilan-textarea"
+        className="w-full bg-transparent resize-none focus:outline-none text-sm text-slate-700 min-h-[24px] h-[24px] bilan-textarea"
         rows={1}
       />
       {focused && filtered.length > 0 && (
-        <div className="absolute top-full left-0 z-20 mt-1 w-64 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden no-print flex flex-col py-1">
+        <div className="absolute top-full left-0 z-20 mt-1 w-full max-w-md bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden no-print flex flex-col py-1">
           {filtered.map((suggestion, idx) => (
             <button 
               key={idx}
@@ -59,7 +60,7 @@ const BilanInput = ({
                 onChange(suggestion);
                 setFocused(false);
               }}
-              className="text-left px-3 py-2 text-[11px] text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+              className="text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors border-b border-slate-50 last:border-0"
             >
               {suggestion}
             </button>
@@ -75,6 +76,7 @@ export default function App() {
   const [sessions, setSessions] = useState<Session[]>(INITIAL_SESSIONS);
   const [isEditingHeader, setIsEditingHeader] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [syncState, setSyncState] = useState<'synced' | 'saving' | 'idle'>('idle');
 
   // Map of APS support to their respective session data
   const SESSIONS_DATA_MAP: Record<string, Record<string, any[]>> = {
@@ -114,18 +116,88 @@ export default function App() {
     }
   };
 
-  // Load from local storage on mount
+  // Load from local storage and Supabase on mount
   useEffect(() => {
-    const savedHeader = localStorage.getItem('cahier-header');
-    const savedSessions = localStorage.getItem('cahier-sessions');
-    if (savedHeader) setHeaderInfo(JSON.parse(savedHeader));
-    if (savedSessions) setSessions(JSON.parse(savedSessions));
+    const loadData = async () => {
+      let docId = localStorage.getItem('cahier-doc-id');
+      
+      if (docId && import.meta.env.VITE_SUPABASE_URL) {
+        try {
+          const { data, error } = await supabase
+            .from('cahier_documents')
+            .select('*')
+            .eq('id', docId)
+            .single();
+            
+          if (data) {
+            setHeaderInfo(data.header_info);
+            setSessions(data.sessions);
+            return;
+          }
+        } catch (err) {
+          console.error("Supabase load error:", err);
+        }
+      }
+      
+      // Fallback to local storage
+      const savedHeader = localStorage.getItem('cahier-header');
+      const savedSessions = localStorage.getItem('cahier-sessions');
+      if (savedHeader) setHeaderInfo(JSON.parse(savedHeader));
+      if (savedSessions) setSessions(JSON.parse(savedSessions));
+    };
+
+    loadData();
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
     });
   }, []);
+
+  // Auto-save effect
+  useEffect(() => {
+    if (syncState === 'idle') {
+      setSyncState('synced');
+      return;
+    }
+    
+    setSyncState('saving');
+    const timer = setTimeout(async () => {
+      // Save locally first
+      localStorage.setItem('cahier-header', JSON.stringify(headerInfo));
+      localStorage.setItem('cahier-sessions', JSON.stringify(sessions));
+      
+      // Save to Supabase if configured
+      if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        try {
+          let docId = localStorage.getItem('cahier-doc-id');
+          
+          if (!docId) {
+            const { data, error } = await supabase
+              .from('cahier_documents')
+              .insert([{ header_info: headerInfo, sessions: sessions }])
+              .select()
+              .single();
+              
+            if (data) {
+              localStorage.setItem('cahier-doc-id', data.id);
+            }
+          } else {
+            await supabase
+              .from('cahier_documents')
+              .update({ header_info: headerInfo, sessions: sessions, updated_at: new Date().toISOString() })
+              .eq('id', docId);
+          }
+        } catch (err) {
+          console.error("Supabase save error:", err);
+        }
+      }
+      
+      setSyncState('synced');
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [headerInfo, sessions]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -141,7 +213,6 @@ export default function App() {
   const saveToLocal = () => {
     localStorage.setItem('cahier-header', JSON.stringify(headerInfo));
     localStorage.setItem('cahier-sessions', JSON.stringify(sessions));
-    alert('Données sauvegardées localement !');
   };
 
   const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -264,10 +335,13 @@ export default function App() {
             <FileDown size={16} />
             <span className="hidden sm:inline">Exporter</span>
           </button>
-          <button onClick={saveToLocal} className="flex items-center gap-2 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg transition-colors text-sm font-medium">
-            <Save size={16} />
-            <span className="hidden sm:inline">Sauvegarder</span>
-          </button>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg text-sm font-medium border border-slate-100">
+            {syncState === 'saving' ? (
+              <><RefreshCw size={14} className="animate-spin text-indigo-500" /> <span className="hidden sm:inline">Enregistrement...</span></>
+            ) : (
+              <><Cloud size={14} className="text-emerald-500" /> <span className="hidden sm:inline">Sauvegardé</span></>
+            )}
+          </div>
           <button onClick={() => window.print()} className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors text-sm font-medium shadow-sm">
             <Printer size={16} />
             <span className="hidden sm:inline">Imprimer</span>
@@ -374,7 +448,7 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className="flex justify-between items-start mb-12 border-b border-slate-200 pb-6 print:mb-4 print:pb-2 group">
+            <div className="flex flex-col gap-4 mb-12 border-b border-slate-200 pb-6 print:mb-4 print:pb-2 group relative">
               <button 
                 onClick={() => setIsEditingHeader(true)}
                 className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 font-medium bg-white border border-slate-200 px-2 py-1 rounded-md shadow-sm no-print"
@@ -383,86 +457,90 @@ export default function App() {
                 Modifier
               </button>
               
-              <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-end w-full">
                 <h2 className="text-4xl font-display font-bold text-[#0B1021] tracking-tight print:text-2xl">Cahier de textes</h2>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-500 print:text-[10px]">
-                  <span><strong className="text-slate-700">Niveau:</strong> {headerInfo.niveauScolaire || '-'}</span>
-                  <span><strong className="text-slate-700">Module:</strong> {headerInfo.moduleEnseignement || '-'}</span>
-                  <span><strong className="text-slate-700">Famille:</strong> {headerInfo.familleAPS || '-'}</span>
-                  <span><strong className="text-slate-700">Support:</strong> {headerInfo.apsSupport || '-'}</span>
+                <div className="flex items-center gap-6 text-xs text-slate-500 print:text-[10px]">
+                  <div className="flex items-center gap-2">
+                    <User size={14} className="text-slate-400 print:w-3 print:h-3" />
+                    <span><strong className="text-slate-700 font-semibold">Enseignant :</strong> {headerInfo.teacher || '-'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <GraduationCap size={14} className="text-slate-400 print:w-3 print:h-3" />
+                    <span><strong className="text-slate-700 font-semibold">Classe :</strong> {headerInfo.classe || '-'}</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-col gap-1.5 text-xs text-slate-500 text-right print:text-[10px]">
-                <div className="flex items-center justify-end gap-2">
-                  <User size={14} className="text-slate-400 print:w-3 print:h-3" />
-                  <span><strong className="text-slate-700 font-semibold">Enseignant</strong> {headerInfo.teacher || '-'}</span>
-                </div>
-                <div className="flex items-center justify-end gap-2">
-                  <GraduationCap size={14} className="text-slate-400 print:w-3 print:h-3" />
-                  <span><strong className="text-slate-700 font-semibold">Classe</strong> {headerInfo.classe || '-'}</span>
-                </div>
+              
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500 print:text-[10px]">
+                <span><strong className="text-slate-700">Niveau :</strong> {headerInfo.niveauScolaire || '-'}</span>
+                <span><strong className="text-slate-700">Module :</strong> {headerInfo.moduleEnseignement || '-'}</span>
+                <span className="flex items-center gap-2">
+                  <strong className="text-slate-700">Famille d'APS :</strong> {headerInfo.familleAPS || '-'} 
+                  <span className="text-slate-300">|</span> 
+                  <strong className="text-slate-700">Support :</strong> {headerInfo.apsSupport || '-'}
+                </span>
               </div>
             </div>
           )}
         </section>
 
         {/* Sessions List Section */}
-        <section className="space-y-12 print:space-y-4">
+        <section className="space-y-12 print:space-y-6">
           {sessions.map((session, index) => {
             const showSequence = index === 0 || session.sequence !== sessions[index - 1].sequence;
             
             return (
-            <div key={session.id} className="group relative flex gap-6">
+            <div key={session.id} className="group relative flex gap-4 print:gap-4">
               {/* Timeline Column */}
-              <div className="flex flex-col items-end w-16 shrink-0 text-[11px] font-semibold text-slate-600 relative pt-1">
+              <div className="flex flex-col items-end w-14 shrink-0 text-[11px] font-semibold text-slate-600 relative pt-1.5 print:pt-1">
                 <input 
                   type="time" 
                   lang="fr-FR"
                   value={session.heure}
                   onChange={(e) => handleSessionChange(session.id, 'heure', e.target.value)}
-                  className="w-full text-right bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+                  className="w-full text-right bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[10px]"
                 />
-                <div className="absolute top-7 bottom-6 right-2 w-px bg-slate-200"></div>
-                <span className="mt-auto text-slate-400">
+                <div className="absolute top-7 bottom-6 right-1 w-px bg-slate-200 print:bg-slate-300"></div>
+                <span className="mt-auto text-slate-400 print:text-[10px]">
                   {session.heure ? `${String(parseInt(session.heure.split(':')[0]) + parseInt(session.duree || '1')).padStart(2, '0')}h${session.heure.split(':')[1] || '00'}` : '--h--'}
                 </span>
               </div>
 
               {/* Content Column */}
-              <div className="flex-1 pb-4 print:pb-2">
-                <div className="flex justify-between items-start mb-4 print:mb-2">
-                  <div className="flex items-center gap-3 w-full">
-                    {showSequence && (
-                      <h3 className="text-lg font-display font-bold text-[#0B1021] underline decoration-2 underline-offset-4 decoration-indigo-200 w-full print:text-sm">
-                        <input 
-                          type="text" 
-                          value={session.sequence}
-                          onChange={(e) => {
-                            const oldSeq = session.sequence;
-                            const newSessions = sessions.map(s => s.sequence === oldSeq ? { ...s, sequence: e.target.value } : s);
-                            setSessions(newSessions);
-                          }}
-                          className="bg-transparent border-none p-0 focus:ring-0 w-full"
-                          placeholder="Nom de la séquence"
-                        />
-                      </h3>
-                    )}
+              <div className="flex-1 pb-6 print:pb-4">
+                {showSequence && (
+                  <div className="mb-4 print:mb-2">
+                    <h3 className="text-lg font-display font-bold text-[#0B1021] underline decoration-2 underline-offset-4 decoration-indigo-200 w-full print:text-sm">
+                      <input 
+                        type="text" 
+                        value={session.sequence}
+                        onChange={(e) => {
+                          const oldSeq = session.sequence;
+                          const newSessions = sessions.map(s => s.sequence === oldSeq ? { ...s, sequence: e.target.value } : s);
+                          setSessions(newSessions);
+                        }}
+                        className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                        placeholder="Nom de la séquence"
+                      />
+                    </h3>
                   </div>
-                </div>
+                )}
 
-                <div className="mb-6 print:mb-2">
-                  <div className="flex items-center gap-3 mb-1.5">
+                <div className="mb-4 print:mb-2">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
                     <h4 className="text-[11px] font-bold text-[#0B1021] uppercase tracking-wider">Objectif :</h4>
                     <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md print:bg-transparent print:border print:border-indigo-200">
                       Séance {session.seanceNumber}
                     </span>
-                    <input 
-                      type="date" 
-                      lang="fr-FR"
-                      value={session.date}
-                      onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
-                      className="text-xs font-medium text-slate-500 bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[10px]"
-                    />
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md print:bg-transparent print:p-0 print:text-[10px]">
+                      <input 
+                        type="date" 
+                        lang="fr-FR"
+                        value={session.date}
+                        onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
+                        className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[10px]"
+                      />
+                    </div>
                   </div>
                   <textarea 
                     dir="auto"
@@ -474,7 +552,7 @@ export default function App() {
                   />
                 </div>
 
-                <div className="border border-slate-200 rounded-xl p-5 relative mt-8 print:mt-4 print:p-3">
+                <div className="border border-slate-200 rounded-xl p-5 relative mt-6 print:mt-3 print:p-3">
                   <div className="absolute -top-3 left-5 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C]">
                     <Edit2 size={12} />
                     Bilan
@@ -489,7 +567,7 @@ export default function App() {
               </div>
               
               {/* Actions */}
-              <div className="absolute right-0 top-10 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity no-print bg-white/90 p-1 rounded-md shadow-sm border border-slate-100">
+              <div className="absolute right-0 top-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity no-print bg-white/90 p-1 rounded-md shadow-sm border border-slate-100">
                 <button 
                   onClick={() => handleSessionChange(session.id, 'completed', !session.completed)}
                   className={`p-1.5 rounded-md transition-colors ${session.completed ? 'text-emerald-500 hover:bg-emerald-50' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
