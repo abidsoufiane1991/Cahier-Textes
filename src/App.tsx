@@ -374,7 +374,7 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className="flex justify-between items-start mb-12 border-b border-slate-200 pb-6 print:mb-8 print:pb-4 group">
+            <div className="flex justify-between items-start mb-12 border-b border-slate-200 pb-6 print:mb-4 print:pb-2 group">
               <button 
                 onClick={() => setIsEditingHeader(true)}
                 className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 font-medium bg-white border border-slate-200 px-2 py-1 rounded-md shadow-sm no-print"
@@ -383,20 +383,22 @@ export default function App() {
                 Modifier
               </button>
               
-              <div className="flex items-baseline gap-4">
-                <h2 className="text-4xl font-display font-bold text-[#0B1021] tracking-tight">Cahier de textes</h2>
-                <span className="text-sm font-medium text-slate-500 flex items-center gap-1.5">
-                  <Calendar size={14} />
-                  {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1.5 text-xs text-slate-500">
-                <div className="flex items-center gap-2">
-                  <User size={14} className="text-slate-400" />
-                  <span><strong className="text-slate-700 font-semibold">Enseignant(e)</strong> {headerInfo.teacher || '-'}</span>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-4xl font-display font-bold text-[#0B1021] tracking-tight print:text-2xl">Cahier de textes</h2>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-500 print:text-[10px]">
+                  <span><strong className="text-slate-700">Niveau:</strong> {headerInfo.niveauScolaire || '-'}</span>
+                  <span><strong className="text-slate-700">Module:</strong> {headerInfo.moduleEnseignement || '-'}</span>
+                  <span><strong className="text-slate-700">Famille:</strong> {headerInfo.familleAPS || '-'}</span>
+                  <span><strong className="text-slate-700">Support:</strong> {headerInfo.apsSupport || '-'}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <GraduationCap size={14} className="text-slate-400" />
+              </div>
+              <div className="flex flex-col gap-1.5 text-xs text-slate-500 text-right print:text-[10px]">
+                <div className="flex items-center justify-end gap-2">
+                  <User size={14} className="text-slate-400 print:w-3 print:h-3" />
+                  <span><strong className="text-slate-700 font-semibold">Enseignant</strong> {headerInfo.teacher || '-'}</span>
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <GraduationCap size={14} className="text-slate-400 print:w-3 print:h-3" />
                   <span><strong className="text-slate-700 font-semibold">Classe</strong> {headerInfo.classe || '-'}</span>
                 </div>
               </div>
@@ -405,7 +407,7 @@ export default function App() {
         </section>
 
         {/* Sessions List Section */}
-        <section className="space-y-12">
+        <section className="space-y-12 print:space-y-4">
           {sessions.map((session, index) => {
             const showSequence = index === 0 || session.sequence !== sessions[index - 1].sequence;
             
@@ -427,11 +429,11 @@ export default function App() {
               </div>
 
               {/* Content Column */}
-              <div className="flex-1 pb-4">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
+              <div className="flex-1 pb-4 print:pb-2">
+                <div className="flex justify-between items-start mb-4 print:mb-2">
+                  <div className="flex items-center gap-3 w-full">
                     {showSequence && (
-                      <h3 className="text-lg font-display font-bold text-[#0B1021] underline decoration-2 underline-offset-4 decoration-indigo-200">
+                      <h3 className="text-lg font-display font-bold text-[#0B1021] underline decoration-2 underline-offset-4 decoration-indigo-200 w-full print:text-sm">
                         <input 
                           type="text" 
                           value={session.sequence}
@@ -440,39 +442,39 @@ export default function App() {
                             const newSessions = sessions.map(s => s.sequence === oldSeq ? { ...s, sequence: e.target.value } : s);
                             setSessions(newSessions);
                           }}
-                          className="bg-transparent border-none p-0 focus:ring-0 w-auto min-w-[200px]"
+                          className="bg-transparent border-none p-0 focus:ring-0 w-full"
                           placeholder="Nom de la séquence"
                         />
                       </h3>
                     )}
+                  </div>
+                </div>
+
+                <div className="mb-6 print:mb-2">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <h4 className="text-[11px] font-bold text-[#0B1021] uppercase tracking-wider">Objectif :</h4>
+                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md print:bg-transparent print:border print:border-indigo-200">
+                      Séance {session.seanceNumber}
+                    </span>
                     <input 
                       type="date" 
                       lang="fr-FR"
                       value={session.date}
                       onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
-                      className="text-xs font-medium text-slate-500 bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+                      className="text-xs font-medium text-slate-500 bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[10px]"
                     />
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <h4 className="text-[11px] font-bold text-[#0B1021] uppercase tracking-wider">Objectifs :</h4>
-                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md">
-                      Séance {session.seanceNumber}
-                    </span>
                   </div>
                   <textarea 
                     dir="auto"
                     value={session.objectif}
                     onChange={(e) => handleSessionChange(session.id, 'objectif', e.target.value)}
-                    className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700"
-                    placeholder="Objectifs de la séance..."
+                    className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700 print:text-[11px]"
+                    placeholder="Objectif de la séance..."
                     rows={2}
                   />
                 </div>
 
-                <div className="border border-slate-200 rounded-xl p-5 relative mt-8">
+                <div className="border border-slate-200 rounded-xl p-5 relative mt-8 print:mt-4 print:p-3">
                   <div className="absolute -top-3 left-5 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C]">
                     <Edit2 size={12} />
                     Bilan
@@ -519,7 +521,7 @@ export default function App() {
         </section>
 
         {/* Signatures Section */}
-        <section className="mt-16 grid grid-cols-3 gap-4 text-center print:mt-12 bg-transparent p-0">
+        <section className="mt-16 grid grid-cols-3 gap-4 text-center print:mt-8 bg-transparent p-0">
           <div className="flex flex-col items-center w-full">
             <span className="font-bold uppercase tracking-widest text-[9px] text-slate-500 mb-6 print:text-slate-800">L'Inspecteur</span>
             <div className="w-full max-w-[10rem] h-px bg-slate-300 print:bg-slate-400"></div>
@@ -529,7 +531,7 @@ export default function App() {
             <div className="w-full max-w-[10rem] h-px bg-slate-300 print:bg-slate-400"></div>
           </div>
           <div className="flex flex-col items-center w-full">
-            <span className="font-bold uppercase tracking-widest text-[9px] text-slate-500 mb-6 print:text-slate-800">Le Professeur</span>
+            <span className="font-bold uppercase tracking-widest text-[9px] text-slate-500 mb-6 print:text-slate-800">L'Enseignant</span>
             <div className="w-full max-w-[10rem] h-px bg-slate-300 print:bg-slate-400"></div>
           </div>
         </section>
