@@ -295,12 +295,12 @@ export default function App() {
       <main id="document-content" className="max-w-7xl mx-auto p-6 space-y-8">
         
         {/* Header Information Section */}
-        <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center no-print">
-            <h2 className="text-lg font-semibold text-slate-800">Informations Générales</h2>
+        <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden print:shadow-none print:border-none print:rounded-none">
+          <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center no-print">
+            <h2 className="text-lg font-medium text-slate-800">Informations Générales</h2>
             <button 
               onClick={() => setIsEditingHeader(!isEditingHeader)}
-              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors"
             >
               <Edit2 size={16} />
               {isEditingHeader ? 'Terminer l\'édition' : 'Modifier'}
@@ -393,30 +393,30 @@ export default function App() {
                 </div>
               </div>
             ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 print:flex print:flex-row print:justify-between print:gap-2">
-                <div className="col-span-2 md:col-span-3 text-center mb-4 no-print">
-                  <h3 className="text-xl font-bold text-slate-800">{headerInfo.teacher}</h3>
+            <div className="flex flex-wrap gap-x-12 gap-y-8 print:flex-row print:justify-between print:gap-2">
+                <div className="w-full text-center mb-2 no-print">
+                  <h3 className="text-2xl font-light text-slate-800 tracking-tight">{headerInfo.teacher}</h3>
                 </div>
                 
-                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1 border-l-4 border-blue-500 pl-3 print:border-l-0 print:pl-0">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">Niveau scolaire</span>
-                  <span className="text-base font-medium text-slate-900 print:text-[10px]">{headerInfo.niveauScolaire || '-'}</span>
+                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1">
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">Niveau scolaire</span>
+                  <span className="text-lg font-medium text-slate-800 print:text-[10px]">{headerInfo.niveauScolaire || '-'}</span>
                 </div>
-                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1 border-l-4 border-blue-500 pl-3 print:border-l-0 print:pl-0">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">Module d'enseignement</span>
-                  <span className="text-base font-medium text-slate-900 print:text-[10px]">{headerInfo.moduleEnseignement || '-'}</span>
+                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1">
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">Module d'enseignement</span>
+                  <span className="text-lg font-medium text-slate-800 print:text-[10px]">{headerInfo.moduleEnseignement || '-'}</span>
                 </div>
-                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1 border-l-4 border-blue-500 pl-3 print:border-l-0 print:pl-0">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">Famille d'APS</span>
-                  <span className="text-base font-medium text-slate-900 print:text-[10px]">{headerInfo.familleAPS || '-'}</span>
+                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1">
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">Famille d'APS</span>
+                  <span className="text-lg font-medium text-slate-800 print:text-[10px]">{headerInfo.familleAPS || '-'}</span>
                 </div>
-                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1 border-l-4 border-blue-500 pl-3 print:border-l-0 print:pl-0">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">APS support</span>
-                  <span className="text-base font-medium text-slate-900 print:text-[10px]">{headerInfo.apsSupport || '-'}</span>
+                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1">
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">APS support</span>
+                  <span className="text-lg font-medium text-slate-800 print:text-[10px]">{headerInfo.apsSupport || '-'}</span>
                 </div>
-                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1 border-l-4 border-blue-500 pl-3 print:border-l-0 print:pl-0">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">Classe</span>
-                  <span className="text-base font-medium text-slate-900 print:text-[10px]">{headerInfo.classe || '-'}</span>
+                <div className="flex flex-col print:flex-row print:items-baseline print:gap-1">
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest print:text-[9px] print:normal-case print:tracking-normal print:after:content-[':']">Classe</span>
+                  <span className="text-lg font-medium text-slate-800 print:text-[10px]">{headerInfo.classe || '-'}</span>
                 </div>
               </div>
             )}
@@ -424,12 +424,12 @@ export default function App() {
         </section>
 
         {/* Sessions Table Section */}
-        <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center no-print">
-            <h2 className="text-lg font-semibold text-slate-800">Planification des Séances</h2>
+        <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden print:shadow-none print:border-none print:rounded-none">
+          <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center no-print">
+            <h2 className="text-lg font-medium text-slate-800">Planification des Séances</h2>
             <button 
               onClick={addSession}
-              className="flex items-center gap-2 text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-md font-medium transition-colors"
+              className="flex items-center gap-2 text-sm bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-lg font-medium transition-colors"
             >
               <Plus size={16} />
               Ajouter une séance
@@ -439,13 +439,13 @@ export default function App() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse table-fixed">
               <thead>
-                <tr className="bg-blue-500 text-white text-sm print:text-[10px]">
-                  <th className="px-4 py-3 print:px-1 print:py-1 font-semibold border border-blue-600 w-[15%]">Séquences</th>
-                  <th className="px-4 py-3 print:px-1 print:py-1 font-semibold border border-blue-600 w-10 text-center">N°</th>
-                  <th className="px-4 py-3 print:px-1 print:py-1 font-semibold border border-blue-600 w-[45%]">Objectifs</th>
-                  <th className="px-4 py-3 print:px-1 print:py-1 font-semibold border border-blue-600 w-32">Date & Heure</th>
-                  <th className="px-4 py-3 print:px-1 print:py-1 font-semibold border border-blue-600 w-[15%]">Bilan / Observations</th>
-                  <th className="px-4 py-3 print:px-1 print:py-1 font-semibold border border-blue-600 w-16 text-center no-print">Actions</th>
+                <tr className="border-b border-slate-200 text-slate-500 text-[10px] uppercase tracking-widest print:text-[9px] print:border-slate-800">
+                  <th className="py-3 pr-4 print:pr-2 font-medium w-[15%]">Séquences</th>
+                  <th className="py-3 px-4 print:px-2 font-medium w-12 text-center">N°</th>
+                  <th className="py-3 px-4 print:px-2 font-medium w-[45%]">Objectifs</th>
+                  <th className="py-3 px-4 print:px-2 font-medium w-28">Date & Heure</th>
+                  <th className="py-3 px-4 print:px-2 font-medium w-[15%]">Bilan / Observations</th>
+                  <th className="py-3 pl-4 font-medium w-16 text-center no-print">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
@@ -454,73 +454,61 @@ export default function App() {
                   const isSameSequenceAsPrev = index > 0 && sessions[index - 1].sequence === session.sequence;
                   
                   return (
-                    <tr key={session.id} className={`hover:bg-slate-50 transition-colors ${session.completed ? 'bg-emerald-50/30' : ''}`}>
-                      <td className={`px-4 py-3 print:px-1 print:py-1 border border-slate-200 align-top ${isSameSequenceAsPrev ? 'text-transparent border-t-transparent' : 'font-medium text-slate-800'}`}>
+                    <tr key={session.id} className={`group border-b border-slate-100 print:border-slate-300 last:border-0 hover:bg-slate-50/50 transition-colors ${session.completed ? 'bg-emerald-50/20' : ''}`}>
+                      <td className={`py-4 pr-4 print:py-2 print:pr-2 align-top ${isSameSequenceAsPrev ? 'text-transparent' : 'font-medium text-slate-900'}`}>
                         <textarea 
                           value={session.sequence}
                           onChange={(e) => handleSessionChange(session.id, 'sequence', e.target.value)}
-                          className={`w-full bg-transparent resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded p-1 print:p-0 text-xs leading-tight ${isSameSequenceAsPrev ? 'text-transparent' : 'text-slate-800'}`}
+                          className={`w-full bg-transparent resize-none focus:outline-none focus:ring-0 p-0 text-xs leading-relaxed ${isSameSequenceAsPrev ? 'text-transparent' : 'text-slate-900'}`}
                           rows={3}
                         />
                       </td>
-                      <td className="px-4 py-3 print:px-1 print:py-1 border border-slate-200 text-center align-top font-medium text-slate-600">
-                        <input 
-                          type="number" 
-                          value={session.seanceNumber || (index + 1)}
-                          onChange={(e) => handleSessionChange(session.id, 'seanceNumber', parseInt(e.target.value) || 0)}
-                          className="w-full text-center bg-transparent focus:outline-none focus:ring-1 focus:ring-blue-500 rounded p-1 print:p-0"
-                        />
+                      <td className="py-4 px-4 print:py-2 print:px-2 text-center align-top font-semibold text-slate-400 print:text-slate-600">
+                        {index + 1}
                       </td>
-                      <td className="px-4 py-3 print:px-1 print:py-1 border border-slate-200 align-top">
+                      <td className="py-4 px-4 print:py-2 print:px-2 align-top">
                         <textarea 
                           value={session.objectif}
                           onChange={(e) => handleSessionChange(session.id, 'objectif', e.target.value)}
-                          className="w-full bg-transparent resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded p-1 print:p-0 min-h-[60px] text-xs leading-relaxed"
+                          className="w-full bg-transparent resize-none focus:outline-none focus:ring-0 p-0 min-h-[60px] text-xs leading-relaxed text-slate-700"
                         />
                       </td>
-                      <td className="px-4 py-3 print:px-1 print:py-1 border border-slate-200 align-top">
+                      <td className="py-4 px-4 print:py-2 print:px-2 align-top">
                         <div className="flex flex-col print:flex-row print:items-center gap-2 print:gap-1">
                           <input 
                             type="date" 
                             value={session.date}
                             onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
-                            className="w-full print:w-auto bg-transparent border border-slate-200 print:border-none rounded p-1 text-[10px] print:text-[8px] focus:outline-none focus:border-blue-500"
+                            className="w-full print:w-auto bg-transparent border-none p-0 text-[10px] print:text-[8px] text-slate-500 focus:ring-0 cursor-pointer"
                           />
                           <input 
                             type="time" 
                             value={session.heure}
                             onChange={(e) => handleSessionChange(session.id, 'heure', e.target.value)}
-                            className="w-full print:w-auto bg-transparent border border-slate-200 print:border-none rounded p-1 text-[10px] print:text-[8px] focus:outline-none focus:border-blue-500"
-                          />
-                          <input 
-                            type="text" 
-                            placeholder="Durée"
-                            value={session.duree}
-                            onChange={(e) => handleSessionChange(session.id, 'duree', e.target.value)}
-                            className="w-full print:w-auto bg-transparent border border-slate-200 print:border-none rounded p-1 text-[10px] print:text-[8px] focus:outline-none focus:border-blue-500"
+                            className="w-full print:w-auto bg-transparent border-none p-0 text-[10px] print:text-[8px] text-slate-500 focus:ring-0 cursor-pointer"
                           />
                         </div>
                       </td>
-                      <td className="px-4 py-3 print:px-1 print:py-1 border border-slate-200 align-top">
+                      <td className="py-4 px-4 print:py-2 print:px-2 align-top">
                         <textarea 
                           placeholder="Observations..."
                           value={session.bilan}
                           onChange={(e) => handleSessionChange(session.id, 'bilan', e.target.value)}
-                          className="w-full bg-transparent resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded p-1 print:p-0 min-h-[40px] text-[10px] leading-tight"
+                          className="w-full bg-transparent resize-none focus:outline-none focus:ring-0 p-0 min-h-[40px] text-[10px] leading-relaxed text-slate-500 placeholder-slate-300"
                         />
                       </td>
-                      <td className="px-4 py-3 border border-slate-200 align-middle text-center no-print">
+                      <td className="py-4 pl-4 align-middle text-center no-print opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="flex flex-col items-center gap-2">
                           <button 
                             onClick={() => handleSessionChange(session.id, 'completed', !session.completed)}
-                            className={`p-1.5 rounded-md transition-colors ${session.completed ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600'}`}
+                            className={`p-1.5 rounded-md transition-colors ${session.completed ? 'text-emerald-500 hover:bg-emerald-50' : 'text-slate-300 hover:text-slate-600 hover:bg-slate-100'}`}
                             title={session.completed ? "Marquer comme non terminée" : "Marquer comme terminée"}
                           >
                             <CheckCircle size={16} />
                           </button>
                           <button 
                             onClick={() => deleteSession(session.id)}
-                            className="p-1.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-md transition-colors"
+                            className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                             title="Supprimer la séance"
                           >
                             <Trash2 size={16} />
