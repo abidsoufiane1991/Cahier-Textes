@@ -20,19 +20,54 @@ import { HeaderInfo, Session } from './types';
 import { Printer, Save, Plus, Trash2, Edit2, FileDown, FileUp, CheckCircle, Download, User, GraduationCap, Calendar, Cloud, RefreshCw } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
+const getContextSuggestions = (objectif: string) => {
+  const lowerObj = objectif.toLowerCase();
+  const suggestions: string[] = [];
+  
+  if (lowerObj.includes('passe') || lowerObj.includes('réception')) {
+    suggestions.push("Bonne maîtrise des passes, mais la réception reste à améliorer.");
+    suggestions.push("Les élèves ont bien assimilé la technique de réception.");
+  }
+  if (lowerObj.includes('attaque') || lowerObj.includes('tir') || lowerObj.includes('smash')) {
+    suggestions.push("L'intention d'attaque est présente, mais manque de précision.");
+    suggestions.push("Bons tirs en situation favorable.");
+  }
+  if (lowerObj.includes('défense') || lowerObj.includes('repli')) {
+    suggestions.push("Le repli défensif est trop lent chez la majorité des élèves.");
+    suggestions.push("Bonne organisation défensive globale.");
+  }
+  if (lowerObj.includes('vitesse') || lowerObj.includes('course')) {
+    suggestions.push("Bon engagement physique, mais la technique de course est à corriger.");
+    suggestions.push("Les temps de réaction au départ sont satisfaisants.");
+  }
+  if (lowerObj.includes('règle') || lowerObj.includes('arbitrage') || lowerObj.includes('règlement')) {
+    suggestions.push("Les règles de base sont comprises et respectées.");
+    suggestions.push("Nécessité de revenir sur certaines règles lors de la prochaine séance.");
+  }
+  if (lowerObj.includes('coopération') || lowerObj.includes('équipe') || lowerObj.includes('collectif')) {
+    suggestions.push("Bon esprit d'équipe et entraide entre les élèves.");
+    suggestions.push("Le jeu collectif doit être davantage encouragé.");
+  }
+  
+  return suggestions;
+};
+
 const BilanInput = ({ 
   value, 
   onChange, 
-  allSessions 
+  allSessions,
+  objectif
 }: { 
   value: string; 
   onChange: (val: string) => void; 
   allSessions: Session[];
+  objectif: string;
 }) => {
   const [focused, setFocused] = useState(false);
   
+  const contextSuggestions = getContextSuggestions(objectif || '');
   const uniquePrevious = Array.from(new Set(allSessions.map(s => s.bilan).filter(b => b && b.trim() !== '')));
-  const allSuggestions = Array.from(new Set([...COMMON_OBSERVATIONS, ...uniquePrevious]));
+  const allSuggestions = Array.from(new Set([...contextSuggestions, ...COMMON_OBSERVATIONS, ...uniquePrevious]));
   
   const filtered = value.trim() === '' 
     ? allSuggestions.slice(0, 6)
@@ -47,8 +82,8 @@ const BilanInput = ({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setTimeout(() => setFocused(false), 200)}
-        className="w-full bg-transparent resize-none focus:outline-none text-sm text-slate-700 min-h-[24px] h-[24px] bilan-textarea"
-        rows={1}
+        className="w-full bg-transparent resize-none focus:outline-none text-sm text-slate-700 min-h-[48px] h-[48px] bilan-textarea"
+        rows={2}
       />
       {focused && filtered.length > 0 && (
         <div className="absolute top-full left-0 z-20 mt-1 w-full max-w-md bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden no-print flex flex-col py-1">
@@ -121,7 +156,7 @@ export default function App() {
     const loadData = async () => {
       let docId = localStorage.getItem('cahier-doc-id');
       
-      if (docId && import.meta.env.VITE_SUPABASE_URL) {
+      if (docId && supabase) {
         try {
           const { data, error } = await supabase
             .from('cahier_documents')
@@ -168,7 +203,7 @@ export default function App() {
       localStorage.setItem('cahier-sessions', JSON.stringify(sessions));
       
       // Save to Supabase if configured
-      if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      if (supabase) {
         try {
           let docId = localStorage.getItem('cahier-doc-id');
           
@@ -526,43 +561,46 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="mb-4 print:mb-2">
-                  <div className="flex flex-wrap items-center gap-3 mb-2">
-                    <h4 className="text-[11px] font-bold text-[#0B1021] uppercase tracking-wider">Objectif :</h4>
-                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md print:bg-transparent print:border print:border-indigo-200">
-                      Séance {session.seanceNumber}
-                    </span>
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md print:bg-transparent print:p-0 print:text-[10px]">
-                      <input 
-                        type="date" 
-                        lang="fr-FR"
-                        value={session.date}
-                        onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
-                        className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[10px]"
-                      />
+                <div className="flex flex-col md:flex-row gap-4 print:flex-row print:gap-4">
+                  <div className="flex-1 mb-4 print:mb-2">
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                      <h4 className="text-[11px] font-bold text-[#0B1021] uppercase tracking-wider">Objectif :</h4>
+                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md print:bg-transparent print:border print:border-indigo-200">
+                        Séance {session.seanceNumber}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md print:bg-transparent print:p-0 print:text-[10px]">
+                        <input 
+                          type="date" 
+                          lang="fr-FR"
+                          value={session.date}
+                          onChange={(e) => handleSessionChange(session.id, 'date', e.target.value)}
+                          className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[10px]"
+                        />
+                      </div>
                     </div>
+                    <textarea 
+                      dir="auto"
+                      value={session.objectif}
+                      onChange={(e) => handleSessionChange(session.id, 'objectif', e.target.value)}
+                      className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700 print:text-[11px]"
+                      placeholder="Objectif de la séance..."
+                      rows={2}
+                    />
                   </div>
-                  <textarea 
-                    dir="auto"
-                    value={session.objectif}
-                    onChange={(e) => handleSessionChange(session.id, 'objectif', e.target.value)}
-                    className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700 print:text-[11px]"
-                    placeholder="Objectif de la séance..."
-                    rows={2}
-                  />
-                </div>
 
-                <div className="border border-slate-200 rounded-xl p-5 relative mt-6 print:mt-3 print:p-3">
-                  <div className="absolute -top-3 left-5 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C]">
-                    <Edit2 size={12} />
-                    Bilan
+                  <div className="flex-1 border border-slate-200 rounded-xl p-5 relative mt-6 md:mt-0 print:mt-0 print:p-3">
+                    <div className="absolute -top-3 left-5 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C]">
+                      <Edit2 size={12} />
+                      Bilan
+                    </div>
+                    
+                    <BilanInput 
+                      value={session.bilan}
+                      onChange={(val) => handleSessionChange(session.id, 'bilan', val)}
+                      allSessions={sessions}
+                      objectif={session.objectif}
+                    />
                   </div>
-                  
-                  <BilanInput 
-                    value={session.bilan}
-                    onChange={(val) => handleSessionChange(session.id, 'bilan', val)}
-                    allSessions={sessions}
-                  />
                 </div>
               </div>
               
