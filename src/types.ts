@@ -1,6 +1,6 @@
 export type HeaderInfo = {
   teacher: string;
-  niveauScolaire: string[];
+  niveauScolaire: string;
   moduleEnseignement: string;
   familleAPS: string;
   apsSupport: string;

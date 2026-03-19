@@ -45,7 +45,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
   @page {
     size: portrait;
-    margin: 12mm;
+    margin: 8mm;
   }
 
   textarea, input {

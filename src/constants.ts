@@ -15,7 +15,7 @@ export const COMMON_OBSERVATIONS = [
 
 export const INITIAL_HEADER: HeaderInfo = {
   teacher: "Pr. Soufiane ABID | ذ. سفيان عابيد",
-  niveauScolaire: ["Tronc Commun"],
+  niveauScolaire: "Tronc Commun",
   moduleEnseignement: "équilibre moteur et intégration par le sport.",
   familleAPS: "Sports de renvoi",
   apsSupport: "Volleyball",

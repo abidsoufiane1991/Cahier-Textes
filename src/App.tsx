@@ -17,7 +17,7 @@ import {
   COMMON_OBSERVATIONS
 } from './constants';
 import { HeaderInfo, Session } from './types';
-import { Printer, Save, Plus, Trash2, Edit2, FileDown, FileUp, CheckCircle, Download, User, GraduationCap, Calendar, Cloud, RefreshCw } from 'lucide-react';
+import { Printer, Save, Plus, Trash2, Edit2, FileDown, FileUp, CheckCircle, Download, User, GraduationCap, Calendar, Cloud, RefreshCw, AlertTriangle } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
 const getContextSuggestions = (objectif: string) => {
@@ -82,7 +82,7 @@ const BilanInput = ({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setTimeout(() => setFocused(false), 200)}
-        className="w-full bg-transparent resize-none focus:outline-none text-sm text-slate-700 min-h-[48px] h-[48px] bilan-textarea"
+        className="w-full bg-transparent resize-none focus:outline-none text-sm text-slate-700 min-h-[48px] h-[48px] print:min-h-[24px] print:h-[24px] print:text-[12px] bilan-textarea"
         rows={2}
       />
       {focused && filtered.length > 0 && (
@@ -104,6 +104,19 @@ const BilanInput = ({
       )}
     </div>
   );
+};
+
+const getEndTime = (startTime: string, duration: string) => {
+  if (!startTime) return '--h--';
+  let [hours, minutes] = startTime.split(':').map(Number);
+  if (duration === '45min') {
+    minutes += 45;
+  } else if (duration === '1h') {
+    hours += 1;
+  }
+  hours += Math.floor(minutes / 60);
+  minutes = minutes % 60;
+  return `${String(hours).padStart(2, '0')}h${String(minutes).padStart(2, '0')}`;
 };
 
 export default function App() {
@@ -136,22 +149,11 @@ export default function App() {
     'Badminton': RACKET_SESSIONS_BY_LEVEL,
   };
 
-  const updateSessionsForAPS = (aps: string, levels: string[]) => {
-    const apsData = SESSIONS_DATA_MAP[aps];
-    if (!apsData) return;
-
-    let allSessionData: any[] = [];
-    levels.forEach(level => {
-      const sessionData = apsData[level];
-      if (sessionData) {
-        allSessionData = [...allSessionData, ...sessionData];
-      }
-    });
-
-    if (allSessionData.length > 0) {
-      const newSessions = allSessionData.map((s, index) => ({
+  const updateSessionsForAPS = (aps: string, level: string) => {
+    const sessionData = SESSIONS_DATA_MAP[aps]?.[level];
+    if (sessionData) {
+      const newSessions = sessionData.map((s, index) => ({
         ...s,
-        seanceNumber: index + 1,
         id: crypto.randomUUID(),
         date: sessions[index]?.date || '',
         heure: sessions[index]?.heure || '',
@@ -176,9 +178,9 @@ export default function App() {
             .single();
             
           if (data) {
-            const loadedHeader = data.header_info;
-            if (typeof loadedHeader.niveauScolaire === 'string') {
-              loadedHeader.niveauScolaire = [loadedHeader.niveauScolaire];
+            let loadedHeader = data.header_info;
+            if (Array.isArray(loadedHeader.niveauScolaire)) {
+              loadedHeader.niveauScolaire = loadedHeader.niveauScolaire[0] || '';
             }
             setHeaderInfo(loadedHeader);
             setSessions(data.sessions);
@@ -193,9 +195,9 @@ export default function App() {
       const savedHeader = localStorage.getItem('cahier-header');
       const savedSessions = localStorage.getItem('cahier-sessions');
       if (savedHeader) {
-        const parsedHeader = JSON.parse(savedHeader);
-        if (typeof parsedHeader.niveauScolaire === 'string') {
-          parsedHeader.niveauScolaire = [parsedHeader.niveauScolaire];
+        let parsedHeader = JSON.parse(savedHeader);
+        if (Array.isArray(parsedHeader.niveauScolaire)) {
+          parsedHeader.niveauScolaire = parsedHeader.niveauScolaire[0] || '';
         }
         setHeaderInfo(parsedHeader);
       }
@@ -275,18 +277,15 @@ export default function App() {
     const { name, value } = e.target;
     
     if (name === 'niveauScolaire') {
-      const selectElement = e.target as HTMLSelectElement;
-      const selectedOptions = Array.from(selectElement.selectedOptions, option => option.value);
-      
-      // When level changes, reset module to the first available for the first selected level
-      const firstModule = selectedOptions.length > 0 && MODULES_BY_LEVEL[selectedOptions[0]] ? MODULES_BY_LEVEL[selectedOptions[0]][0] : '';
+      // When level changes, reset module to the first available for that level
+      const firstModule = MODULES_BY_LEVEL[value]?.[0] || '';
       setHeaderInfo({ 
         ...headerInfo, 
-        niveauScolaire: selectedOptions,
+        niveauScolaire: value,
         moduleEnseignement: firstModule 
       });
 
-      updateSessionsForAPS(headerInfo.apsSupport, selectedOptions);
+      updateSessionsForAPS(headerInfo.apsSupport, value);
 
     } else if (name === 'familleAPS') {
       // When family changes, reset support to the first available for that family
@@ -326,14 +325,17 @@ export default function App() {
     setSessions([...sessions, newSession]);
   };
 
-  const deleteSession = (id: string) => {
-    if (confirm('Voulez-vous vraiment supprimer cette séance ?')) {
-      const filteredSessions = sessions.filter(s => s.id !== id);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+
+  const confirmDeleteSession = () => {
+    if (sessionToDelete) {
+      const filteredSessions = sessions.filter(s => s.id !== sessionToDelete);
       const renumberedSessions = filteredSessions.map((s, index) => ({
         ...s,
         seanceNumber: index + 1
       }));
       setSessions(renumberedSessions);
+      setSessionToDelete(null);
     }
   };
 
@@ -355,9 +357,9 @@ export default function App() {
       try {
         const data = JSON.parse(event.target?.result as string);
         if (data.headerInfo && data.sessions) {
-          const importedHeader = data.headerInfo;
-          if (typeof importedHeader.niveauScolaire === 'string') {
-            importedHeader.niveauScolaire = [importedHeader.niveauScolaire];
+          let importedHeader = data.headerInfo;
+          if (Array.isArray(importedHeader.niveauScolaire)) {
+            importedHeader.niveauScolaire = importedHeader.niveauScolaire[0] || '';
           }
           setHeaderInfo(importedHeader);
           setSessions(data.sessions);
@@ -444,17 +446,15 @@ export default function App() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Niveau Scolaire</label>
                   <select
-                    multiple
                     name="niveauScolaire"
                     value={headerInfo.niveauScolaire}
                     onChange={handleHeaderChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[80px]"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     {Object.keys(MODULES_BY_LEVEL).map(level => (
                       <option key={level} value={level}>{level}</option>
                     ))}
                   </select>
-                  <p className="text-[10px] text-slate-400">Maintenez Ctrl/Cmd pour sélectionner plusieurs</p>
                 </div>
 
                 <div className="space-y-1">
@@ -465,7 +465,7 @@ export default function App() {
                     onChange={handleHeaderChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
-                    {Array.from(new Set(headerInfo.niveauScolaire.flatMap(level => MODULES_BY_LEVEL[level] || []))).map(module => (
+                    {(MODULES_BY_LEVEL[headerInfo.niveauScolaire] || []).map(module => (
                       <option key={module} value={module}>{module}</option>
                     ))}
                   </select>
@@ -537,12 +537,12 @@ export default function App() {
               </div>
               
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500 print:text-[10px]">
-                <span><strong className="text-slate-700">Niveau :</strong> {headerInfo.niveauScolaire?.join(', ') || '-'}</span>
+                <span><strong className="text-slate-700">Niveau :</strong> {headerInfo.niveauScolaire || '-'}</span>
                 <span><strong className="text-slate-700">Module :</strong> {headerInfo.moduleEnseignement || '-'}</span>
                 <span className="flex items-center gap-2">
                   <strong className="text-slate-700">Famille d'APS :</strong> {headerInfo.familleAPS || '-'} 
                   <span className="text-slate-300">|</span> 
-                  <strong className="text-slate-700">Support :</strong> {headerInfo.apsSupport || '-'}
+                  <strong className="text-slate-700">APS Support :</strong> {headerInfo.apsSupport || '-'}
                 </span>
               </div>
             </div>
@@ -550,44 +550,48 @@ export default function App() {
         </section>
 
         {/* Sessions List Section */}
-        <section className="space-y-12 print:space-y-6">
+        <section className="space-y-12 print:space-y-2">
           {sessions.map((session, index) => {
             const showSequence = index === 0 || session.sequence !== sessions[index - 1].sequence;
             
             return (
-            <div key={session.id} className="group relative flex gap-4 print:gap-4">
+            <div key={session.id} className="group relative flex gap-4 print:gap-2">
               {/* Timeline Column */}
-              <div className="flex flex-col items-end w-14 shrink-0 text-[13px] font-semibold text-[#0B1021] relative pt-1 print:pt-1">
-                <input 
-                  type="time" 
-                  lang="fr-FR"
-                  value={session.heure}
-                  onChange={(e) => handleSessionChange(session.id, 'heure', e.target.value)}
-                  className="w-full text-right bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[12px]"
-                />
-                <div className="absolute top-8 bottom-8 right-0 w-px bg-slate-300 print:bg-slate-300 flex items-center justify-center">
-                  <div className="bg-white py-1 print:py-0">
-                    <select
-                      value={session.duree || '1h'}
-                      onChange={(e) => handleSessionChange(session.id, 'duree', e.target.value)}
-                      className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-full pl-2 pr-1 py-0.5 text-center cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 print:border-slate-300 print:bg-transparent print:appearance-none"
-                    >
-                      <option value="1h">1h</option>
-                      <option value="2h">2h</option>
-                      <option value="3h">3h</option>
-                      <option value="4h">4h</option>
-                    </select>
-                  </div>
+              <div className="flex flex-col items-center justify-center w-16 shrink-0 relative pt-1 print:pt-0">
+                <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-slate-300 print:bg-slate-300"></div>
+                <div className="relative z-10 bg-white py-2 print:py-1 flex flex-col items-center gap-1">
+                  <input 
+                    type="text" 
+                    value={session.heure}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/[^0-9:]/g, '');
+                      if (val.length === 2 && session.heure.length === 1 && !val.includes(':')) {
+                        val += ':';
+                      }
+                      handleSessionChange(session.id, 'heure', val.slice(0, 5));
+                    }}
+                    placeholder="08:00"
+                    maxLength={5}
+                    className="w-full text-center bg-transparent border-none p-0 focus:ring-0 cursor-text text-[12px] font-semibold text-[#0B1021] print:text-[10px]"
+                  />
+                  <select
+                    value={session.duree || '1h'}
+                    onChange={(e) => handleSessionChange(session.id, 'duree', e.target.value)}
+                    className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-full pl-2 pr-1 py-0.5 text-center cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 print:border-slate-300 print:bg-transparent print:appearance-none"
+                  >
+                    <option value="45min">45min</option>
+                    <option value="1h">1h</option>
+                  </select>
+                  <span className="text-[#0B1021] text-[12px] font-semibold print:text-[10px]">
+                    {getEndTime(session.heure, session.duree || '1h')}
+                  </span>
                 </div>
-                <span className="mt-auto text-[#0B1021] print:text-[12px]">
-                  {session.heure ? `${String(parseInt(session.heure.split(':')[0]) + parseInt(session.duree || '1')).padStart(2, '0')}h${session.heure.split(':')[1] || '00'}` : '--h--'}
-                </span>
               </div>
 
               {/* Content Column */}
-              <div className="flex-1 pb-6 print:pb-4 pl-2">
+              <div className="flex-1 pb-6 print:pb-1 pl-2">
                 {showSequence && (
-                  <div className="mb-4 print:mb-2">
+                  <div className="mb-4 print:mb-1">
                     <h3 className="text-lg font-display font-bold text-[#0B1021] underline decoration-2 underline-offset-4 decoration-indigo-200 w-full print:text-sm">
                       <input 
                         type="text" 
@@ -604,9 +608,9 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="flex flex-row gap-4 print:gap-4">
-                  <div className="flex-1 mb-4 print:mb-2">
-                    <div className="flex items-center gap-3 mb-2 whitespace-nowrap overflow-hidden">
+                <div className="flex flex-row gap-4 print:gap-2">
+                  <div className="flex-1 mb-4 print:mb-1">
+                    <div className="flex items-center gap-3 mb-2 print:mb-1 whitespace-nowrap overflow-hidden">
                       <h4 className="text-[13px] font-bold text-[#0B1021] tracking-wide">Activités :</h4>
                       <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md print:bg-transparent print:border print:border-indigo-200 shrink-0">
                         Séance {session.seanceNumber}
@@ -621,19 +625,19 @@ export default function App() {
                         />
                       </div>
                     </div>
-                    <textarea 
+                      <textarea 
                       dir="auto"
                       value={session.objectif}
                       onChange={(e) => handleSessionChange(session.id, 'objectif', e.target.value)}
-                      className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700 print:text-[12px]"
+                      className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700 print:text-[12px] print:leading-tight"
                       placeholder="Objectif de la séance..."
                       rows={2}
                     />
                   </div>
 
-                  <div className="flex-1 border border-slate-200 rounded-xl p-4 relative print:p-3">
-                    <div className="absolute -top-3 left-4 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C]">
-                      <Edit2 size={12} />
+                  <div className="flex-1 border border-slate-200 rounded-xl p-4 relative print:p-2 print:rounded-lg">
+                    <div className="absolute -top-3 left-4 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C] print:px-2 print:py-0 print:-top-2 print:text-[9px]">
+                      <Edit2 size={10} className="print:w-2.5 print:h-2.5" />
                       Bilan
                     </div>
                     
@@ -657,7 +661,7 @@ export default function App() {
                   <CheckCircle size={14} />
                 </button>
                 <button 
-                  onClick={() => deleteSession(session.id)}
+                  onClick={() => setSessionToDelete(session.id)}
                   className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                   title="Supprimer la séance"
                 >
@@ -694,6 +698,35 @@ export default function App() {
             <div className="w-full max-w-[10rem] h-px bg-slate-300 print:bg-slate-400"></div>
           </div>
         </section>
+
+        {/* Delete Confirmation Modal */}
+        {sessionToDelete && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-6">
+              <div className="space-y-2 text-center">
+                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Supprimer la séance ?</h3>
+                <p className="text-sm text-slate-500">Cette action est irréversible. Voulez-vous vraiment supprimer cette séance ?</p>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setSessionToDelete(null)}
+                  className="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors"
+                >
+                  Annuler
+                </button>
+                <button 
+                  onClick={confirmDeleteSession}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </main>
     </div>
