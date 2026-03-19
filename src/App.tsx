@@ -136,11 +136,22 @@ export default function App() {
     'Badminton': RACKET_SESSIONS_BY_LEVEL,
   };
 
-  const updateSessionsForAPS = (aps: string, level: string) => {
-    const sessionData = SESSIONS_DATA_MAP[aps]?.[level];
-    if (sessionData) {
-      const newSessions = sessionData.map((s, index) => ({
+  const updateSessionsForAPS = (aps: string, levels: string[]) => {
+    const apsData = SESSIONS_DATA_MAP[aps];
+    if (!apsData) return;
+
+    let allSessionData: any[] = [];
+    levels.forEach(level => {
+      const sessionData = apsData[level];
+      if (sessionData) {
+        allSessionData = [...allSessionData, ...sessionData];
+      }
+    });
+
+    if (allSessionData.length > 0) {
+      const newSessions = allSessionData.map((s, index) => ({
         ...s,
+        seanceNumber: index + 1,
         id: crypto.randomUUID(),
         date: sessions[index]?.date || '',
         heure: sessions[index]?.heure || '',
@@ -165,7 +176,11 @@ export default function App() {
             .single();
             
           if (data) {
-            setHeaderInfo(data.header_info);
+            const loadedHeader = data.header_info;
+            if (typeof loadedHeader.niveauScolaire === 'string') {
+              loadedHeader.niveauScolaire = [loadedHeader.niveauScolaire];
+            }
+            setHeaderInfo(loadedHeader);
             setSessions(data.sessions);
             return;
           }
@@ -177,7 +192,13 @@ export default function App() {
       // Fallback to local storage
       const savedHeader = localStorage.getItem('cahier-header');
       const savedSessions = localStorage.getItem('cahier-sessions');
-      if (savedHeader) setHeaderInfo(JSON.parse(savedHeader));
+      if (savedHeader) {
+        const parsedHeader = JSON.parse(savedHeader);
+        if (typeof parsedHeader.niveauScolaire === 'string') {
+          parsedHeader.niveauScolaire = [parsedHeader.niveauScolaire];
+        }
+        setHeaderInfo(parsedHeader);
+      }
       if (savedSessions) setSessions(JSON.parse(savedSessions));
     };
 
@@ -254,15 +275,18 @@ export default function App() {
     const { name, value } = e.target;
     
     if (name === 'niveauScolaire') {
-      // When level changes, reset module to the first available for that level
-      const firstModule = MODULES_BY_LEVEL[value]?.[0] || '';
+      const selectElement = e.target as HTMLSelectElement;
+      const selectedOptions = Array.from(selectElement.selectedOptions, option => option.value);
+      
+      // When level changes, reset module to the first available for the first selected level
+      const firstModule = selectedOptions.length > 0 && MODULES_BY_LEVEL[selectedOptions[0]] ? MODULES_BY_LEVEL[selectedOptions[0]][0] : '';
       setHeaderInfo({ 
         ...headerInfo, 
-        niveauScolaire: value,
+        niveauScolaire: selectedOptions,
         moduleEnseignement: firstModule 
       });
 
-      updateSessionsForAPS(headerInfo.apsSupport, value);
+      updateSessionsForAPS(headerInfo.apsSupport, selectedOptions);
 
     } else if (name === 'familleAPS') {
       // When family changes, reset support to the first available for that family
@@ -331,7 +355,11 @@ export default function App() {
       try {
         const data = JSON.parse(event.target?.result as string);
         if (data.headerInfo && data.sessions) {
-          setHeaderInfo(data.headerInfo);
+          const importedHeader = data.headerInfo;
+          if (typeof importedHeader.niveauScolaire === 'string') {
+            importedHeader.niveauScolaire = [importedHeader.niveauScolaire];
+          }
+          setHeaderInfo(importedHeader);
           setSessions(data.sessions);
           alert('Données importées avec succès !');
         } else {
@@ -416,15 +444,17 @@ export default function App() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">Niveau Scolaire</label>
                   <select
+                    multiple
                     name="niveauScolaire"
                     value={headerInfo.niveauScolaire}
                     onChange={handleHeaderChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[80px]"
                   >
                     {Object.keys(MODULES_BY_LEVEL).map(level => (
                       <option key={level} value={level}>{level}</option>
                     ))}
                   </select>
+                  <p className="text-[10px] text-slate-400">Maintenez Ctrl/Cmd pour sélectionner plusieurs</p>
                 </div>
 
                 <div className="space-y-1">
@@ -435,7 +465,7 @@ export default function App() {
                     onChange={handleHeaderChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
-                    {(MODULES_BY_LEVEL[headerInfo.niveauScolaire] || []).map(module => (
+                    {Array.from(new Set(headerInfo.niveauScolaire.flatMap(level => MODULES_BY_LEVEL[level] || []))).map(module => (
                       <option key={module} value={module}>{module}</option>
                     ))}
                   </select>
@@ -507,7 +537,7 @@ export default function App() {
               </div>
               
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500 print:text-[10px]">
-                <span><strong className="text-slate-700">Niveau :</strong> {headerInfo.niveauScolaire || '-'}</span>
+                <span><strong className="text-slate-700">Niveau :</strong> {headerInfo.niveauScolaire?.join(', ') || '-'}</span>
                 <span><strong className="text-slate-700">Module :</strong> {headerInfo.moduleEnseignement || '-'}</span>
                 <span className="flex items-center gap-2">
                   <strong className="text-slate-700">Famille d'APS :</strong> {headerInfo.familleAPS || '-'} 
@@ -527,22 +557,35 @@ export default function App() {
             return (
             <div key={session.id} className="group relative flex gap-4 print:gap-4">
               {/* Timeline Column */}
-              <div className="flex flex-col items-end w-14 shrink-0 text-[11px] font-semibold text-slate-600 relative pt-1.5 print:pt-1">
+              <div className="flex flex-col items-end w-14 shrink-0 text-[13px] font-semibold text-[#0B1021] relative pt-1 print:pt-1">
                 <input 
                   type="time" 
                   lang="fr-FR"
                   value={session.heure}
                   onChange={(e) => handleSessionChange(session.id, 'heure', e.target.value)}
-                  className="w-full text-right bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[10px]"
+                  className="w-full text-right bg-transparent border-none p-0 focus:ring-0 cursor-pointer print:text-[12px]"
                 />
-                <div className="absolute top-7 bottom-6 right-1 w-px bg-slate-200 print:bg-slate-300"></div>
-                <span className="mt-auto text-slate-400 print:text-[10px]">
+                <div className="absolute top-8 bottom-8 right-0 w-px bg-slate-300 print:bg-slate-300 flex items-center justify-center">
+                  <div className="bg-white py-1 print:py-0">
+                    <select
+                      value={session.duree || '1h'}
+                      onChange={(e) => handleSessionChange(session.id, 'duree', e.target.value)}
+                      className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-full pl-2 pr-1 py-0.5 text-center cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 print:border-slate-300 print:bg-transparent print:appearance-none"
+                    >
+                      <option value="1h">1h</option>
+                      <option value="2h">2h</option>
+                      <option value="3h">3h</option>
+                      <option value="4h">4h</option>
+                    </select>
+                  </div>
+                </div>
+                <span className="mt-auto text-[#0B1021] print:text-[12px]">
                   {session.heure ? `${String(parseInt(session.heure.split(':')[0]) + parseInt(session.duree || '1')).padStart(2, '0')}h${session.heure.split(':')[1] || '00'}` : '--h--'}
                 </span>
               </div>
 
               {/* Content Column */}
-              <div className="flex-1 pb-6 print:pb-4">
+              <div className="flex-1 pb-6 print:pb-4 pl-2">
                 {showSequence && (
                   <div className="mb-4 print:mb-2">
                     <h3 className="text-lg font-display font-bold text-[#0B1021] underline decoration-2 underline-offset-4 decoration-indigo-200 w-full print:text-sm">
@@ -561,14 +604,14 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="flex flex-col md:flex-row gap-4 print:flex-row print:gap-4">
+                <div className="flex flex-row gap-4 print:gap-4">
                   <div className="flex-1 mb-4 print:mb-2">
-                    <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h4 className="text-[11px] font-bold text-[#0B1021] uppercase tracking-wider">Objectif :</h4>
-                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md print:bg-transparent print:border print:border-indigo-200">
+                    <div className="flex items-center gap-3 mb-2 whitespace-nowrap overflow-hidden">
+                      <h4 className="text-[13px] font-bold text-[#0B1021] tracking-wide">Activités :</h4>
+                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded-md print:bg-transparent print:border print:border-indigo-200 shrink-0">
                         Séance {session.seanceNumber}
                       </span>
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md print:bg-transparent print:p-0 print:text-[10px]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md print:bg-transparent print:p-0 print:text-[10px] shrink-0">
                         <input 
                           type="date" 
                           lang="fr-FR"
@@ -582,14 +625,14 @@ export default function App() {
                       dir="auto"
                       value={session.objectif}
                       onChange={(e) => handleSessionChange(session.id, 'objectif', e.target.value)}
-                      className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700 print:text-[11px]"
+                      className="w-full bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-slate-700 print:text-[12px]"
                       placeholder="Objectif de la séance..."
                       rows={2}
                     />
                   </div>
 
-                  <div className="flex-1 border border-slate-200 rounded-xl p-5 relative mt-6 md:mt-0 print:mt-0 print:p-3">
-                    <div className="absolute -top-3 left-5 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C]">
+                  <div className="flex-1 border border-slate-200 rounded-xl p-4 relative print:p-3">
+                    <div className="absolute -top-3 left-4 bg-[#FFF4B0] px-3 py-0.5 rounded-md text-[11px] font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-[#FFE55C]">
                       <Edit2 size={12} />
                       Bilan
                     </div>
