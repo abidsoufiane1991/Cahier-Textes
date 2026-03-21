@@ -51,7 +51,7 @@ function BilanInput({ value, onChange }: { value: string, onChange: (val: string
           setShowSuggestions(true);
           autoResize(e as any);
         }}
-        className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 rounded px-2 py-1 -ml-2 text-slate-700 min-h-[60px] overflow-hidden leading-relaxed"
+        className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded px-2 py-1 -ml-2 text-slate-700 min-h-[60px] overflow-hidden leading-relaxed"
         placeholder="Bilan de la séance..."
         rows={1}
       />
@@ -60,7 +60,7 @@ function BilanInput({ value, onChange }: { value: string, onChange: (val: string
           {COMMON_OBSERVATIONS.map((obs, idx) => (
             <div
               key={idx}
-              className="px-3 py-2 text-sm text-slate-700 hover:bg-indigo-50 cursor-pointer"
+              className="px-3 py-2 text-sm text-slate-700 hover:bg-blue-50 cursor-pointer"
               onClick={() => {
                 const newValue = value ? `${value}\n${obs}` : obs;
                 onChange(newValue);
@@ -270,12 +270,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-900">
       {/* Top Bar */}
       <div className="bg-[#1e1b4b] text-white px-6 py-3 flex items-center justify-between shadow-md print:hidden sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-600/30 p-2 rounded-lg">
-            <BookOpen className="w-5 h-5 text-indigo-300" />
+          <div className="bg-blue-600/30 p-2 rounded-lg">
+            <BookOpen className="w-5 h-5 text-blue-300" />
           </div>
           <h1 className="font-semibold text-lg tracking-wide">Cahier de Textes EPS Pro</h1>
         </div>
@@ -311,7 +311,7 @@ export default function App() {
             <div className="w-px h-3 bg-white/20 mx-1"></div>
             
             {syncState === 'saving' && (
-              <span className="flex items-center gap-1.5 text-indigo-300">
+              <span className="flex items-center gap-1.5 text-blue-300">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                 Enregistrement...
               </span>
@@ -348,54 +348,50 @@ export default function App() {
 
       <div className="max-w-[1400px] mx-auto p-8 print:p-0 print:max-w-none">
         {/* Header Section */}
-        <div className="bg-white mb-8 print:mb-6">
-          <div className="flex justify-between items-center mb-8">
-            <div className="text-right font-bold text-slate-500 text-sm w-1/3" dir="rtl">
+        <div className="bg-white mb-6 print:mb-4">
+          <div className="flex justify-between items-center mb-6 print:mb-4">
+            <div className="text-right font-bold text-slate-500 text-sm w-1/2" dir="rtl">
               {headerInfo.schoolName}
             </div>
-            <div className="flex flex-col items-center w-1/3">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Coat_of_arms_of_Morocco.svg/1200px-Coat_of_arms_of_Morocco.svg.png" alt="Logo" className="h-20 object-contain opacity-90" />
-            </div>
-            <div className="text-right font-bold text-slate-500 text-sm w-1/3" dir="rtl">
+            <div className="text-left font-bold text-slate-500 text-sm w-1/2" dir="rtl">
               {headerInfo.directorateName}
             </div>
           </div>
           
-          <div className="flex justify-between items-end border-b border-slate-200 pb-3 px-2">
+          <div className="flex justify-between items-end border-b border-slate-200 pb-2 px-2">
             <div className="w-1/4">
               <p className="text-xs text-slate-800 font-bold mb-2">Niveau scolaire</p>
-              <p className="text-sm font-bold text-indigo-900">{headerInfo.niveauScolaire}</p>
+              <p className="text-sm font-bold text-blue-900">{headerInfo.niveauScolaire}</p>
             </div>
             <div className="text-center w-1/2 px-4">
               <p className="text-xs text-slate-800 font-bold mb-2">Module d'enseignement</p>
-              <p className="text-sm font-bold text-indigo-900">{headerInfo.moduleEnseignement}</p>
+              <p className="text-sm font-bold text-blue-900">{headerInfo.moduleEnseignement}</p>
             </div>
             <div className="text-right w-1/8 pr-8">
               <p className="text-xs text-slate-800 font-bold mb-2">APS support</p>
-              <p className="text-sm font-bold text-indigo-900">{headerInfo.apsSupport}</p>
+              <p className="text-sm font-bold text-blue-900">{headerInfo.apsSupport}</p>
             </div>
             <div className="text-right w-1/8">
               <p className="text-xs text-slate-800 font-bold mb-2">Classe</p>
-              <p className="text-sm font-bold text-indigo-900">{headerInfo.classe || '.........'}</p>
+              <p className="text-sm font-bold text-blue-900">{headerInfo.classe || '.........'}</p>
             </div>
           </div>
         </div>
 
         {/* Table Section */}
-        <div className="bg-white overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden print:shadow-none print:border-none print:rounded-none">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse border border-slate-800">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-blue-700 text-white text-xs uppercase tracking-wider font-bold">
-                  <th className="px-4 py-3 text-center border border-blue-800 w-48">SÉQUENCES</th>
-                  <th className="px-2 py-3 text-center border border-blue-800 w-12">N</th>
-                  <th className="px-4 py-3 text-center border border-blue-800">OBJECTIFS</th>
-                  <th className="px-4 py-3 text-center border border-blue-800 w-32">DATE</th>
-                  <th className="px-4 py-3 text-center border border-blue-800 w-48">BILAN</th>
-                  <th className="w-12 px-2 py-3 print:hidden bg-white border-none"></th>
+                <tr className="bg-blue-700 text-white text-xs uppercase tracking-wider font-bold print:bg-slate-100 print:text-slate-800 print:border-y-2 print:border-slate-800 print:text-[10px]">
+                  <th className="px-2 py-2 text-center border-r border-blue-600 print:border-slate-800 w-40">SÉQUENCES</th>
+                  <th className="px-1 py-2 text-center border-r border-blue-600 print:border-slate-800 w-8">N°</th>
+                  <th className="px-2 py-2 text-center border-r border-blue-600 print:border-slate-800">OBJECTIFS</th>
+                  <th className="px-2 py-2 text-center border-r border-blue-600 print:border-slate-800 w-24">DATE</th>
+                  <th className="px-2 py-2 text-center border-r border-blue-600 print:border-slate-800 w-40">BILAN</th>
                 </tr>
               </thead>
-              <tbody className="border border-slate-800">
+              <tbody className="border-b border-slate-200 print:border-slate-800 print:text-[11px]">
                 {sessions.map((session, index) => {
                   const isFirstOfSequence = index === 0 || session.sequence !== sessions[index - 1].sequence;
                   
@@ -411,25 +407,32 @@ export default function App() {
                   }
                   
                   return (
-                    <tr key={session.id} className="border-b border-slate-800 hover:bg-slate-50/50 transition-colors group">
+                    <tr key={session.id} className="border-b border-slate-200 hover:bg-slate-50/50 transition-colors group print:border-slate-800 relative">
                       {isFirstOfSequence && (
                         <td 
                           rowSpan={rowSpan} 
-                          className="px-4 py-4 align-middle text-center border-r border-slate-800 bg-slate-50/30"
+                          className="px-2 py-2 align-middle text-center border-r border-slate-200 bg-blue-50/30 print:border-slate-800 print:bg-transparent"
                         >
                           <textarea
                             value={session.sequence}
                             onChange={(e) => updateSequenceBlock(index, session.sequence, e.target.value)}
-                            className="w-full bg-transparent focus:outline-none text-indigo-900 font-medium text-sm text-center resize-none"
+                            className="w-full bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded p-1 text-blue-900 font-semibold text-sm text-center resize-none print:text-slate-800 print:text-[11px]"
                             placeholder="Séquence..."
-                            rows={3}
+                            rows={2}
                           />
                         </td>
                       )}
-                      <td className="px-2 py-4 align-middle text-center border-r border-slate-800 font-medium text-indigo-900">
+                      <td className="px-1 py-2 align-middle text-center border-r border-slate-200 font-bold text-blue-700 print:border-slate-800 print:text-slate-800 relative">
                         {session.seanceNumber}
+                        <button
+                          onClick={() => setSessionToDelete(session.id)}
+                          className="absolute -left-8 top-1/2 -translate-y-1/2 p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 print:hidden"
+                          title="Supprimer la ligne"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </td>
-                      <td className="px-4 py-4 align-middle border-r border-slate-800">
+                      <td className="px-2 py-2 align-middle border-r border-slate-200 print:border-slate-800">
                         <textarea
                           value={session.objectif}
                           onChange={(e) => {
@@ -437,36 +440,27 @@ export default function App() {
                             autoResize(e);
                           }}
                           onFocus={autoResize}
-                          className="w-full bg-transparent resize-none focus:outline-none text-slate-700 text-sm min-h-[40px] overflow-hidden leading-relaxed"
+                          className="w-full bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded p-1 text-slate-700 text-sm min-h-[30px] overflow-hidden leading-relaxed print:text-[11px] print:min-h-[20px]"
                           placeholder="Objectif de la séance..."
                           rows={1}
                         />
                       </td>
-                      <td className="px-4 py-4 align-middle border-r border-slate-800">
+                      <td className="px-2 py-2 align-middle border-r border-slate-200 print:border-slate-800">
                         <input
                           type="date"
                           value={session.date}
                           onChange={(e) => updateSession(session.id, 'date', e.target.value)}
-                          className="w-full bg-transparent focus:outline-none text-slate-700 text-sm print:hidden"
+                          className="w-full bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded p-1 text-slate-700 text-sm print:hidden text-center"
                         />
-                        <span className="hidden print:block text-slate-700 text-sm text-center">
+                        <span className="hidden print:block text-slate-700 text-[11px] text-center">
                           {session.date ? new Date(session.date).toLocaleDateString('fr-FR') : ''}
                         </span>
                       </td>
-                      <td className="px-4 py-4 align-middle border-r border-slate-800">
+                      <td className="px-2 py-2 align-middle border-r border-slate-200 print:border-slate-800">
                         <BilanInput
                           value={session.bilan}
                           onChange={(val) => updateSession(session.id, 'bilan', val)}
                         />
-                      </td>
-                      <td className="px-2 py-4 align-middle print:hidden text-center border-none">
-                        <button
-                          onClick={() => setSessionToDelete(session.id)}
-                          className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                          title="Supprimer la ligne"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </td>
                     </tr>
                   );
@@ -479,14 +473,14 @@ export default function App() {
           <div className="bg-slate-50 border-t border-slate-200 p-3 print:hidden flex gap-3">
             <button
               onClick={() => addSession(false)}
-              className="flex-1 py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-medium hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all flex items-center justify-center gap-2"
+              className="flex-1 py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-medium hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50 transition-all flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" />
               Ajouter une séance
             </button>
             <button
               onClick={() => addSession(true)}
-              className="flex-1 py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-500 font-medium hover:border-indigo-400 hover:text-indigo-700 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+              className="flex-1 py-3 border-2 border-dashed border-blue-200 rounded-xl text-blue-500 font-medium hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" />
               Nouvelle séquence
@@ -495,31 +489,31 @@ export default function App() {
         </div>
 
         {/* Signatures Section */}
-        <div className="mt-12 flex justify-between px-8 print:mt-8 print:px-4">
-          <div className="flex flex-col items-center w-64">
-            <div className="bg-slate-50 border border-slate-200 px-8 py-2 mb-6 print:bg-slate-100">
-              <span className="text-xs font-bold text-indigo-900 uppercase tracking-widest">L'ENSEIGNANT</span>
+        <div className="mt-8 flex justify-between px-8 print:mt-4 print:px-4">
+          <div className="flex flex-col items-center w-48">
+            <div className="bg-slate-50 border border-slate-200 px-6 py-1.5 mb-4 print:bg-slate-100">
+              <span className="text-[10px] font-bold text-blue-900 uppercase tracking-widest">L'ENSEIGNANT</span>
             </div>
-            <span className="text-sm font-bold text-indigo-900 uppercase tracking-widest mb-2">{headerInfo.teacher}</span>
+            <span className="text-xs font-bold text-blue-900 uppercase tracking-widest mb-2">{headerInfo.teacher}</span>
             <div className="w-full border-b-2 border-dotted border-slate-400"></div>
           </div>
-          <div className="flex flex-col items-center w-64">
-            <div className="bg-slate-50 border border-slate-200 px-8 py-2 mb-12 print:bg-slate-100">
-              <span className="text-xs font-bold text-indigo-900 uppercase tracking-widest">LA DIRECTION</span>
+          <div className="flex flex-col items-center w-48">
+            <div className="bg-slate-50 border border-slate-200 px-6 py-1.5 mb-8 print:bg-slate-100">
+              <span className="text-[10px] font-bold text-blue-900 uppercase tracking-widest">LA DIRECTION</span>
             </div>
             <div className="w-full border-b-2 border-dotted border-slate-400"></div>
           </div>
-          <div className="flex flex-col items-center w-64">
-            <div className="bg-slate-50 border border-slate-200 px-8 py-2 mb-12 print:bg-slate-100">
-              <span className="text-xs font-bold text-indigo-900 uppercase tracking-widest">L'INSPECTEUR</span>
+          <div className="flex flex-col items-center w-48">
+            <div className="bg-slate-50 border border-slate-200 px-6 py-1.5 mb-8 print:bg-slate-100">
+              <span className="text-[10px] font-bold text-blue-900 uppercase tracking-widest">L'INSPECTEUR</span>
             </div>
             <div className="w-full border-b-2 border-dotted border-slate-400"></div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-16 text-center print:mt-12">
-          <p className="text-xs text-slate-400 font-medium">{headerInfo.schoolYear}</p>
+        <div className="mt-8 text-center print:mt-4">
+          <p className="text-[10px] text-slate-400 font-medium">{headerInfo.schoolYear}</p>
         </div>
       </div>
 
@@ -544,7 +538,7 @@ export default function App() {
                   type="text"
                   value={headerInfo.teacher}
                   onChange={(e) => handleHeaderChange('teacher', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
@@ -554,7 +548,7 @@ export default function App() {
                   type="text"
                   value={headerInfo.classe}
                   onChange={(e) => handleHeaderChange('classe', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   placeholder="Ex: Tronc Commun 1"
                 />
               </div>
@@ -565,7 +559,7 @@ export default function App() {
                   type="text"
                   value={headerInfo.schoolName}
                   onChange={(e) => handleHeaderChange('schoolName', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-right"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right"
                   dir="rtl"
                 />
               </div>
@@ -576,7 +570,7 @@ export default function App() {
                   type="text"
                   value={headerInfo.directorateName}
                   onChange={(e) => handleHeaderChange('directorateName', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-right"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right"
                   dir="rtl"
                 />
               </div>
@@ -587,7 +581,7 @@ export default function App() {
                   type="text"
                   value={headerInfo.schoolYear}
                   onChange={(e) => handleHeaderChange('schoolYear', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-right"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right"
                   dir="rtl"
                 />
               </div>
@@ -597,7 +591,7 @@ export default function App() {
                 <select
                   value={headerInfo.niveauScolaire}
                   onChange={(e) => handleHeaderChange('niveauScolaire', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                 >
                   {Object.keys(MODULES_BY_LEVEL).map(level => (
                     <option key={level} value={level}>{level}</option>
@@ -610,7 +604,7 @@ export default function App() {
                 <select
                   value={headerInfo.moduleEnseignement}
                   onChange={(e) => handleHeaderChange('moduleEnseignement', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                 >
                   {MODULES_BY_LEVEL[headerInfo.niveauScolaire]?.map(module => (
                     <option key={module} value={module}>{module}</option>
@@ -623,7 +617,7 @@ export default function App() {
                 <select
                   value={headerInfo.familleAPS}
                   onChange={(e) => handleHeaderChange('familleAPS', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                 >
                   {Object.keys(APS_BY_FAMILY).map(famille => (
                     <option key={famille} value={famille}>{famille}</option>
@@ -636,7 +630,7 @@ export default function App() {
                 <select
                   value={headerInfo.apsSupport}
                   onChange={(e) => handleHeaderChange('apsSupport', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                 >
                   {APS_BY_FAMILY[headerInfo.familleAPS]?.map(aps => (
                     <option key={aps} value={aps}>{aps}</option>
@@ -648,7 +642,7 @@ export default function App() {
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setIsEditingHeader(false)}
-                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
               >
                 Enregistrer
               </button>
