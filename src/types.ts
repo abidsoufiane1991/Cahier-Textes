@@ -5,6 +5,9 @@ export type HeaderInfo = {
   familleAPS: string;
   apsSupport: string;
   classe: string;
+  schoolName: string;
+  directorateName: string;
+  schoolYear: string;
 };
 
 export type Session = {
@@ -13,7 +16,6 @@ export type Session = {
   seanceNumber: number;
   objectif: string;
   date: string;
-  heure: string;
   duree: string;
   bilan: string;
   completed: boolean;
